@@ -7,16 +7,18 @@
 #include <Wire.h>
 
 // I/O config
-const int photoCell = 0;
-const int diagLED = 13;
-const int baudRate = 9600;
+#define photoCell 0
+#define diagLED 13
+#define baudRate 9600
 
 // I2C address info
-const int myAddr = 100;
+#define myAddr 0x64
+
+// Drop threshold config
+#define dropThresh -6
 
 // Global vars
 boolean ledState = LOW;
-int dropThresh = -6;
 unsigned long lastSample = 0;
 
 // Board setup.
