@@ -1,5 +1,5 @@
 // Laser precipitation sensor by ThreeSixes
-// https://github.com/ThreeSixes/OpenWeatherStation
+// https://github.com/ThreeSixes/OpenWeatherStn
 // LICENSE?
 
 // Include I2C support for communicating with
