@@ -38,8 +38,8 @@ void setup() {
   Wire.onRequest(sendCPM);
   
   // Print I2C message.
-  Serial.print("Listening on I2C addr ");
-  Serial.println(myAddr);
+  Serial.print("Listening on I2C addr 0x");
+  Serial.println(myAddr, HEX);
 }
 
 // Calibrate the CdS cell
@@ -94,6 +94,10 @@ void loop() {
   delay(250);
   // And calibrate
   int baseline = calibrate();
+
+  // Debug print for calibrated light value
+  Serial.print("Calibrated at ");
+  Serial.println(baseline);
 
   // Let 'em know we're going.
   Serial.println("Sampling.");
