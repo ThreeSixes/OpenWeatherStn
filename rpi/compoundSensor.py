@@ -1,12 +1,9 @@
 # Fake packets
 
-# Wind @ stop, min average observed: 66
-# Rain CPM: 0, Wind Avg: 67, Wind Max: 68, Light Avg: 18
-# bytearray([0x0, 0x1, 0xE, 0x0, 0x0, 0x0, 0x0, 0x0, 0x44, 0x0, 0x0, 0x12]) 
-
 # Fan on, rain count
-# Rain CPM: 5999, Wind Avg: 84, Wind Max: 90, Light Avg: 22
-# bytearray([0x0, 0x1, 0xE, 0x0, 0x0, 0x17, 0x6F, 0x0, 0x5A, 0x0, 0x0, 0x16]) 
+#Rain CPM: 510, Wind Avg: 77, Wind Max: 85, Light Avg: 21
+#bytearray([0x0, 0x1, 0xE, 0x0, 0x0, 0x1, 0xFE, 0x0, 0x4D, 0x0, 0x55, 0x15])
+
 
 
 ###########
@@ -14,7 +11,6 @@
 ###########
 
 import smbus
-from pprint import pprint
 
 
 #################
@@ -26,12 +22,15 @@ class compoundSensor():
 	compoundSensor is a class that supports I2C/SMBus communication with the compound weather sensor. The sonstructor accepts one optional argument - the I2C address of the compound weather sensor.
 	"""
 
-	def __init__(self, windCal, cmpdAddr = 0x64):
+	def __init__(self, windOffset, cmpdAddr = 0x64):
 		# I2C set up class-wide I2C bus
 		self.i2c = smbus.SMBus(1)
-	
+		
 		# Sensor's I2C address
 		self.cmpdAddr = cmpdAddr
+		
+		# Wind offset
+		self.windOffset = windOffset
 		
 		### Register settings and definitions ###
 		
@@ -76,29 +75,22 @@ class compoundSensor():
 		Read a sequence of specified registers from the weather sensor. Returns a byte array.
 		"""
 		
-		data = bytearray()
+		data = []
 		
 		# Boundary and sanity check to make sure we're looking for a valid range from low to high position
-		if (firstReg >= 0) and (firstReg < (self.i2cRegSize - 1)) and (lasttReg >= 1) and (lastReg < self.i2cRegSize) and (firstReg > lastReg):
+		if (firstReg >= 0) and (firstReg < (self.i2cRegSize - 1)) and (lastReg >= 1) and (lastReg < self.i2cRegSize) and (firstReg < lastReg):
 			try:
-				# Keep track of the index
-				n = 0
-				
-				
+				# Load the fake data frame.
+				fakeFrame = bytearray([0x0, 0x1, 0xE, 0x0, 0x0, 0x1, 0xFE, 0x0, 0x4D, 0x0, 0x55, 0x15])
 				
 				# Loop through specified registers
-				for i in range(firstReg, lastReg):
-					#data[n] = self.i2c.read_byte_data(self.cmpAddr, i)
-					fakeFrame = bytearray([0x0, 0x1, 0xE, 0x0, 0x0, 0x17, 0x6F, 0x0, 0x5A, 0x0, 0x0, 0x16])
-					data[n] = fakeFrame[i]
-					
-					# Increment index
-					n = n + 1
-			
+				for i in range(firstReg, lastReg + 1):
+					#data.append(self.i2c.read_byte_data(self.cmpAddr, i))
+					data.append(fakeFrame[i])
 			except IOError:
 				print "compoundSensor IO Error: Failed to read compound weather sensor on I2C bus."
 		
-		return data;
+		return bytearray(data);
 	
 	
 	def readReg(self, register):
@@ -109,19 +101,21 @@ class compoundSensor():
 		"""
 		
 		# Use a byte array for consistency with readRange()
-		data = bytearray([0])
+		data = []
+		
+		# Load fake data frame.
+		fakeFrame = bytearray([0x0, 0x1, 0xE, 0x0, 0x0, 0x1, 0xFE, 0x0, 0x4D, 0x0, 0x55, 0x15])
 		
 		if(register >= 0) and (register < self.i2cRegSize):
 			try:
 				# Read the specific register.
-				#data[0] = self.i2c.read_byte_data(self.cmpAddr, register)
-				fakeFrame = bytearray([0x0, 0x1, 0xE, 0x0, 0x0, 0x17, 0x6F, 0x0, 0x5A, 0x0, 0x0, 0x16])
-				data[0] = fakeFrame[register]
+				#data.append(self.i2c.read_byte_data(self.cmpAddr, register))
+				data.append(fakeFrame[register])
 			
 			except IOError:
 				print "compoundSensor IO Error: Failed to read compound weather sensor on I2C bus."
 		
-		return data;
+		return bytearray(data);
 		
 
 	def readAll(self):
@@ -132,7 +126,7 @@ class compoundSensor():
 		"""
 		
 		# Read all the bytes.
-		return readRange(self.i2c_fwMajor, self.i2c_lightAvg)
+		return self.readRange(self.i2c_fwMajor, self.i2c_lightAvg)
 	
 	def checkStatusReg(self, status):
 		"""
@@ -145,7 +139,7 @@ class compoundSensor():
 		
 		statusByte = self.readReg(self.i2c_status)
 		
-		if (statusByte[0] & status) > 0:
+		if int(statusByte[0] & status) == status:
 			retVal = True
 		
 		return retVal
@@ -157,9 +151,9 @@ class compoundSensor():
 		Get the sensor's firmware version. Returns a version number as major.minor
 		"""
 		
-		verRaw = readRange(self.i2c_fwMajor, self.i2c_fwMinor)
+		verRaw = self.readRange(self.i2c_fwMajor, self.i2c_fwMinor)
 		
-		return verRaw[0] + (verRaw[1] / 10)
+		return verRaw[0] + verRaw[1] / 10.0
 	
 	def getRainCount(self):
 		"""
@@ -180,8 +174,15 @@ class compoundSensor():
 		
 		windSpeed = -1
 		
+		# Implement a floor since the ADC wanders a bit.
+		if windVal < self.windOffset:
+			windVal = self.windOffset
+		
+		# Drop value by offset
+		windVal = windVal - self.windOffset
+		
 		# Convert ADC readings to a wind speed in meters per second.
-		windSpeed = self.valMap(float(windVal), 0.0, 1023.0, 0.0, 32.0)
+		windSpeed = self.valMap(windVal, 0.0, 328.0, 0.0, 32.0)
 		
 		# Convert wind speed from meters/sec to km/h (1 m/S = 3.6 km/h)
 		windSpeed = windSpeed * 3.6
