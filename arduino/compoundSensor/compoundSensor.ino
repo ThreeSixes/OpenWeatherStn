@@ -368,7 +368,7 @@ void loop() {
     i2cBuff[i2c_windAvgMSB]  = (windSample & 0xff00) >> 8;
     i2cBuff[i2c_windAvgLSB]  = windSample &  0x00ff;
     i2cBuff[i2c_windMaxMSB]  = (windSampleMax & 0xff00) >> 8;
-    i2cBuff[i2c_windAvgLSB] = windSampleMax  & 0x00ff;
+    i2cBuff[i2c_windMaxLSB]  = windSampleMax  & 0x00ff;
     
     // Put our ambinet light average in the buffer.
     i2cBuff[i2c_lightAvg] = lightSample;
