@@ -23,6 +23,7 @@ Byte 10: Wind speed max LSB
 Byte 11: Ambient light brightness
 */
 
+
 // ************
 // * Includes *
 // ************
@@ -70,6 +71,10 @@ Byte 11: Ambient light brightness
 #define i2cStatus_rain     0x08 // Do we have an installed rain sensor?
 #define i2cStatus_light    0x10 // Do we have an installed ambient light sensor?
 
+// Version numbers
+#define versionMajor       0x00
+#define versionMinor       0x02
+
 // How long should we sample?
 #define sampleTime          60  // 1 minute (60 seconds)
 
@@ -100,11 +105,6 @@ int sampleTimer = 0;
 // I2C buffer and command status
 uint8_t i2cBuff[i2cBuffSize]; // Store I2C registers here.
 uint8_t i2cTarget = -1; // Store the command we're being sent.
-
-// Configure version numbers
-uint8_t versionMajor = 0x00;
-uint8_t versionMinor = 0x01;
-
 
 // *************
 // * Functions *
