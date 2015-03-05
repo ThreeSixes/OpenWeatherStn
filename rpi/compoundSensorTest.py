@@ -4,8 +4,9 @@ from compoundSensor import compoundSensor
 # Compound sensor object, baseline wind value of 67.
 cs = compoundSensor(67)
 
-print(str(cs.getVersion()))
-print(str(cs.getRainCount()))
-pprint(cs.checkStatusReg(cs.i2cStatus_data))
-print(str(round(cs.getWindAvg(), 2)))
-print(str(round(cs.getWindMax(), 2)))
+print("Firmware version: " + str(cs.getVersion()))
+print("Sensor status:    " + str(cs.getcs.checkStatusReg(cs.i2cStatus_data)))
+print("Rain counter:     " + str(cs.getRainCount()))
+print("Wind average:     " + str(round(cs.getWindAvg(), 2)))
+print("Wind maximum:     " + str(round(cs.getWindMax(), 2)))
+print("Light average:    " + str(cs.getLightAvg()))
