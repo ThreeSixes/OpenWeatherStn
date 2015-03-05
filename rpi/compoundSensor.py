@@ -167,6 +167,17 @@ class compoundSensor():
 		
 		return retVal
 
+	def getStatus(self):
+		"""
+		getStatus()
+		
+		Get status byte. Returns a byte array.
+		"""
+		
+		statusByte = self.readReg(self.i2c_status)
+		
+		return bytearray(statusByte)
+
 	def getVersion(self):
 		"""
 		getVersion()
