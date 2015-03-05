@@ -39,6 +39,11 @@ Byte 11: Ambient light brightness
 // * Configuration *
 // *****************
 
+// Installed sensors - comment out lines for sensors that aren't installed.
+#define hasWind
+#define hasRain
+#define hasLight
+
 // I/O config
 #define rainCdS            0     // Analog pin 0 for laser light sensor
 #define calDelay           100   // Rain laser detection calibration delay
@@ -73,7 +78,7 @@ Byte 11: Ambient light brightness
 
 // Version numbers
 #define versionMajor       0x00
-#define versionMinor       0x02
+#define versionMinor       0x03
 
 // How long should we sample?
 #define sampleTime          60  // 1 minute (60 seconds)
@@ -165,29 +170,31 @@ void dumpI2cReg() {
   return;
 }
 
-// Calibrate the CdS cell
-int calibrate() {
-  // Read the CdS cell.
-  int retVal = analogRead(rainCdS);
+#ifdef hasRain
+  // Calibrate the CdS cell
+  int calibrate() {
+    // Read the CdS cell.
+    int retVal = analogRead(rainCdS);
 
-  // Send our calibrated value.
-  return retVal;
-}
-
-// Strobe the onboard LED
-void strobe() {
-  // Invert the LED state.
-  if(ledState == HIGH) {
-    ledState = LOW;
-  } else {
-    ledState = HIGH;
+    // Send our calibrated value.
+    return retVal;
   }
 
-  // Set the LED
-  digitalWrite(diagLED, ledState);
+  // Strobe the onboard LED
+  void strobe() {
+    // Invert the LED state.
+    if(ledState == HIGH) {
+      ledState = LOW;
+    } else {
+      ledState = HIGH;
+    }
 
-  return;
-}
+    // Set the LED
+    digitalWrite(diagLED, ledState);
+
+    return;
+  }
+#endif
 
 // Increment our timer.
 void rollTimer() {
@@ -223,25 +230,34 @@ void setup() {
   // Set the I2C status register to reflect we're doing our initial poll
   setI2CStat(i2cStatus_initpoll);
   
-  // Set the I2C status register to include all installed instruments
-  setI2CStat(i2cStatus_rain);
-  setI2CStat(i2cStatus_wind);
-  //setI2CStat(i2cStatus_light);
+  // Set the I2C status register to include all installed instruments, and print message.
+  #ifdef hasRain
+    setI2CStat(i2cStatus_rain);
+    Serial.println("Rain sensor instaled");
+  #endif
+  
+  #ifdef hasWind
+    setI2CStat(i2cStatus_wind);
+    Serial.println("Wind sensor instaled");
+  #endif
+  
+  #ifdef hasLight
+    setI2CStat(i2cStatus_light);
+    Serial.println("Light sensor instaled");
+  #endif
   
   // Set up our I2C bus
   Wire.begin(myAddr);
   Wire.onReceive(receiveData);
   Wire.onRequest(sendData);
   
-  // Print I2C message.
+  // Print I2C message
   Serial.print("Listening on I2C addr 0x");
   Serial.println(myAddr, HEX);
   
-  // Configure our timer. This requires digital pins 9 and 10.
+  // Configure Timer1's carry pins.
   pinMode(9, OUTPUT);
   pinMode(10, OUTPUT);
-  Timer1.initialize(); // This runs at one second by default.
-  Timer1.attachInterrupt(rollTimer); // Here we roll the timer every second.
 }
 
 // Main execution body
@@ -274,22 +290,31 @@ void loop() {
   // Dump I2C registers.
   dumpI2cReg();
 
-  // Print main loop debug message
-  Serial.print("Sleeping ");
-  Serial.print(calDelay);
-  Serial.println("ms, and then calibrating rain laser.");
+  
+  #ifdef hasRain
+    // Print main loop debug message
+    Serial.print("Sleeping ");
+    Serial.print(calDelay);
+    Serial.println("ms, and then calibrating rain laser.");
 
-  // Let the ADC settle before we calibrate
-  delay(calDelay);
-  // And calibrate
-  int baseline = calibrate();
+    // Let the ADC settle before we calibrate
+    delay(calDelay);
+    // And calibrate
+    int baseline = calibrate();
 
-  // Debug print for calibrated light value
-  Serial.print("Rain laser calibrated at ");
-  Serial.println(baseline);
-
+    // Debug print for calibrated light value
+    Serial.print("Rain laser calibrated at ");
+    Serial.println(baseline);
+  #endif
+  
+  // Start sampling timer.
+  Serial.println("Starting sampling timer.");
+  Timer1.initialize(); // This runs at one second by default.
+  Timer1.attachInterrupt(rollTimer); // Here we roll the timer every second.
+  
   // Let 'em know we're going.
-  Serial.println("Sampling rain and wind data.");
+  Serial.println("Sampling sensors.");
+  Serial.println();
 
   // Main sensor loop
   while (true) {
@@ -303,54 +328,83 @@ void loop() {
     // Sample for specified amount of time.
     while(sampleTimer < sampleTime) {
       
-      // Check the rainCdS sensor for rain data
-      rainVal = analogRead(rainCdS);
+      #ifdef hasRain
+        // Check the rainCdS sensor for rain data
+        rainVal = analogRead(rainCdS);
+      #endif
+      
+      #ifdef hasWind
+        // Check the anemometer for wind speed
+        windVal = analogRead(anemometer);
+      #endif
 
-      // Check the anemometer for wind speed
-      windVal = analogRead(anemometer);
+      #ifdef hasLight
+        // Check the ambient light sensor.
+        lightVal = analogRead(lightCdS);
+      #endif
 
-      // Check the ambient light sensor.
-      lightVal = analogRead(lightCdS);
-
-      // Compute offset value from baseline.
-      offsetVal = rainVal - baseline;
-
-      // If enough light is refracted (based on dropThresh)
-      // Increment the rain counter.
-      if (offsetVal < dropThresh) {
-        // Increment our hit counter
-        hits++;
-        // And flicker the diagnostic LED.
-        strobe();
-      }
+      #ifdef hasRain
+        // Compute offset value from baseline.
+        offsetVal = rainVal - baseline;
+      
+        // If enough light is refracted (based on dropThresh)
+        // Increment the rain counter.
+        if (offsetVal < dropThresh) {
+          // Increment our hit counter
+          hits++;
+          // And flicker the diagnostic LED.
+          strobe();
+        }
+      #endif
       
       // Try to average our wind and ambient light data out.
       if (firstSample) {
         // Since we didn't have a previous sample, don't add or divide.
-        windAvg = windVal;
-        lightAvg = lightVal;
+        #ifdef hasWind
+          windAvg = windVal;
+        #endif
+        
+        #ifdef hasLight
+          lightAvg = lightVal;
+        #endif
+        
         // Clear flag.
         firstSample = LOW;
       } else {
         // Compute running average of wind/light data.
-        windAvg = (windAvg + windVal) / 2;
-        lightAvg = (lightAvg + lightVal) / 2;
+        #ifdef hasWind
+          windAvg = (windAvg + windVal) / 2;
+        #endif
+        
+        #ifdef hasLight
+          lightAvg = (lightAvg + lightVal) / 2;
+        #endif
       }
       
-      // Do we have a record wind speed for this sample set?
-      if (windVal > windMax) {
-        windMax = windVal;
-      }
+      #ifdef hasWind
+        // Do we have a record wind speed for this sample set?
+        if (windVal > windMax) {
+          windMax = windVal;
+        }
+      #endif
       
       // Wait 1ms before next sample.
       delay(1);
     }
     
     // Set our global "last sample" data.
-    rainSample = hits;
-    windSample = windAvg;
-    windSampleMax = windMax;
-    lightSample = map(lightAvg, 0, 1023, 0, 255); // Convert to 8 bits.
+    #ifdef hasRain
+      rainSample = hits;
+    #endif
+    
+    #ifdef hasWind
+      windSample = windAvg;
+      windSampleMax = windMax;
+    #endif
+    
+    #ifdef hasLight
+      lightSample = map(lightAvg, 0, 1023, 0, 255); // Convert to 8 bits.
+    #endif
     
     // Ensure our init poll flag is clear and set no data
     // since we don't want corrupt data if we're asked for
@@ -377,15 +431,16 @@ void loop() {
     setI2CStat(i2cStatus_data);
     
     // Debug print
-    Serial.print("Rain CPM: ");
+    Serial.print("Rain CPM:  ");
     Serial.println(rainSample);
-    Serial.print("Wind Avg: ");
+    Serial.print("Wind Avg:  ");
     Serial.println(windSample);
-    Serial.print("Wind Max: ");
+    Serial.print("Wind Max:  ");
     Serial.println(windSampleMax);
     Serial.print("Light Avg: ");
     Serial.println(lightSample);
     dumpI2cReg();
+    Serial.println();
     
     // Reset our sample-taking vars.
     hits = 0;
