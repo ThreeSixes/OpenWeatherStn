@@ -85,7 +85,7 @@ class compoundSensor():
 				
 				# Loop through specified registers
 				for i in range(firstReg, lastReg + 1):
-					data.append(self.i2c.read_byte_data(self.cmpAddr, i))
+					data.append(self.i2c.read_byte_data(self.cmpdAddr, i))
 					#data.append(fakeFrame[i])
 			except IOError:
 				print "compoundSensor IO Error: Failed to read compound weather sensor on I2C bus."
@@ -109,7 +109,7 @@ class compoundSensor():
 		if(register >= 0) and (register < self.i2cRegSize):
 			try:
 				# Read the specific register.
-				data.append(self.i2c.read_byte_data(self.cmpAddr, register))
+				data.append(self.i2c.read_byte_data(self.cmpdAddr, register))
 				#data.append(fakeFrame[register])
 			
 			except IOError:
