@@ -5,7 +5,7 @@ from compoundSensor import compoundSensor
 cs = compoundSensor(67)
 
 print("Firmware version: " + str(cs.getVersion()))
-print("Sensor status:    0x" + str(hex(ord(cs.getStatus()))))
+print("Sensor status:    " + str(hex(ord(cs.getStatus()))))
 print("Rain counter:     " + str(cs.getRainCount()))
 print("Wind average:     " + str(round(cs.getWindAvg(), 2)))
 print("Wind maximum:     " + str(round(cs.getWindMax(), 2)))
