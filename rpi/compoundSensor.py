@@ -11,6 +11,7 @@
 ###########
 
 import smbus
+import time
 
 
 #################
@@ -68,6 +69,30 @@ class compoundSensor():
 		
 		return (subject - subjectMin) * (targetMax - targetMin) / (subjectMax - subjectMin) + targetMin
 
+	def windScale2Speed(self, windVal):
+		"""
+		windScale2Speed(windVal)
+		
+		Converts A/D converter wind reading to speed in KM/H.
+		"""
+		
+		windSpeed = -1
+		
+		# Implement a floor since the ADC wanders a bit.
+		if windVal < self.windOffset:
+			windVal = self.windOffset
+		
+		# Drop value by offset
+		windVal = windVal - self.windOffset
+		
+		# Convert ADC readings to a wind speed in meters per second.
+		windSpeed = self.valMap(windVal, 0.0, 328.0, 0.0, 32.0)
+		
+		# Convert wind speed from meters/sec to km/h (1 m/S = 3.6 km/h)
+		windSpeed = windSpeed * 3.6
+		
+		return windSpeed
+
 	def readRange(self, firstReg, lastReg):
 		"""
 		readRange()
@@ -92,7 +117,6 @@ class compoundSensor():
 		
 		return bytearray(data);
 	
-	
 	def readReg(self, register):
 		"""
 		readReg(register)
@@ -116,7 +140,6 @@ class compoundSensor():
 				print "compoundSensor IO Error: Failed to read compound weather sensor on I2C bus."
 		
 		return bytearray(data);
-		
 
 	def readAll(self):
 		"""
@@ -160,34 +183,14 @@ class compoundSensor():
 		Get the rain counter value. Returns a 32 bit unsigned integer.
 		"""
 		
+		# Make sure we have stable output.
+		if ~self.checkStatusReg(self.i2cStatus_data):
+			time.sleep(.1)
+		
 		rainRaw = self.readRange(self.i2c_rainMSB, self.i2c_rainLSB)
 		rainCount = (rainRaw[0] << 24) | (rainRaw[1] << 16) | (rainRaw[2] << 8) | rainRaw[3]
 		
 		return rainCount
-	
-	def windScale2Speed(self, windVal):
-		"""
-		windScale2Speed(windVal)
-		
-		Converts A/D converter wind reading to speed in KM/H.
-		"""
-		
-		windSpeed = -1
-		
-		# Implement a floor since the ADC wanders a bit.
-		if windVal < self.windOffset:
-			windVal = self.windOffset
-		
-		# Drop value by offset
-		windVal = windVal - self.windOffset
-		
-		# Convert ADC readings to a wind speed in meters per second.
-		windSpeed = self.valMap(windVal, 0.0, 328.0, 0.0, 32.0)
-		
-		# Convert wind speed from meters/sec to km/h (1 m/S = 3.6 km/h)
-		windSpeed = windSpeed * 3.6
-		
-		return windSpeed
 
 	def getWindAvg(self):
 		"""
@@ -195,6 +198,10 @@ class compoundSensor():
 		
 		Get average wind speed data registers from the compound sensor module. Returns wind speed in kph.
 		"""
+		
+		# Make sure we have stable output.
+		if ~self.checkStatusReg(self.i2cStatus_data):
+			time.sleep(.1)
 		
 		# Grab the average for the wind data and convert it to an int
 		windAvgRaw = self.readRange(self.i2c_windAvgMSB, self.i2c_windAvgLSB)
@@ -212,6 +219,10 @@ class compoundSensor():
 		Get max wind speed data registers from the compound sensor module. Returns wind speed in kph.
 		"""
 		
+		# Make sure we have stable output.
+		if ~self.checkStatusReg(self.i2cStatus_data):
+			time.sleep(.1)
+		
 		# Grab the average for the wind data and convert it to an int
 		windMaxRaw = self.readRange(self.i2c_windMaxMSB, self.i2c_windMaxLSB)
 		windMaxReading = (windMaxRaw[0] << 8) | windMaxRaw[1]
@@ -228,8 +239,11 @@ class compoundSensor():
 		Get the average amount of ambient light detected. Returns an integer between 0 and 255.
 		"""
 		
+		# Make sure we have stable output.
+		if ~self.checkStatusReg(self.i2cStatus_data):
+			time.sleep(.1)
+		
 		# Grab average light data
 		lightAvgRaw = self.readReg(self.i2c_lightAvg)
 		
 		return lightAvgRaw[0]
-	
