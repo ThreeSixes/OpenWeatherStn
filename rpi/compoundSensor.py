@@ -243,6 +243,38 @@ class compoundSensor():
 		
 		return windSpeed
 	
+	def getWindAvgRaw(self):
+		"""
+		readWindAvgRaw()
+		
+		Get average wind speed data registers from the compound sensor module. Returns the decimal value of the register.
+		"""
+		
+		# Make sure we have stable output.
+		if ~self.checkStatusReg(self.i2cStatus_data):
+			time.sleep(.1)
+		
+		# Grab the average for the wind data and convert it to an int
+		windAvgRaw = self.readRange(self.i2c_windAvgMSB, self.i2c_windAvgLSB)
+		
+		return windAvgRaw
+	
+	def getWindMaxRaw(self):
+		"""
+		readWindMax()
+		
+		Get max wind speed data registers from the compound sensor module. Returns the decimal value of the register.
+		"""
+		
+		# Make sure we have stable output.
+		if ~self.checkStatusReg(self.i2cStatus_data):
+			time.sleep(.1)
+		
+		# Grab the average for the wind data and convert it to an int
+		windMaxRaw = self.readRange(self.i2c_windMaxMSB, self.i2c_windMaxLSB)
+		
+		return windMaxRaw
+	
 	def getLightAvg(self):
 		"""
 		getLightAvg()
