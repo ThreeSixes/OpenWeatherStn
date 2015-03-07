@@ -257,7 +257,7 @@ class compoundSensor():
 		# Grab the average for the wind data and convert it to an int
 		windAvgRaw = self.readRange(self.i2c_windAvgMSB, self.i2c_windAvgLSB)
 		
-		return windAvgRaw
+		return int(windAvgRaw)
 	
 	def getWindMaxRaw(self):
 		"""
@@ -273,7 +273,7 @@ class compoundSensor():
 		# Grab the average for the wind data and convert it to an int
 		windMaxRaw = self.readRange(self.i2c_windMaxMSB, self.i2c_windMaxLSB)
 		
-		return windMaxRaw
+		return int(windMaxRaw)
 	
 	def getLightAvg(self):
 		"""
