@@ -2,7 +2,7 @@ from pprint import pprint
 from compoundSensor import compoundSensor
 
 # Compound sensor object, baseline wind value of 67.
-cs = compoundSensor(67)
+cs = compoundSensor(74)
 
 print("Firmware version: " + str(cs.getVersion()))
 print("Sensor status:    " + str(hex(ord(cs.getStatus()))))
