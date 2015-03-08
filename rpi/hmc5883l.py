@@ -8,12 +8,12 @@ import smbus
 
 
 ##################
-# hmc5338L class #
+# hmc5883L class #
 ##################
 
 class hmc5883l:
     """
-    hmc5883l is a class that supports communication with an I2C-connected Honeywell HMC5338L 3-axis magenetometer/compass. The constructor for this class accepts two argements: The I2C bus ID the sensor is on which defaults to 1 and, the I2C address of the sensor, but will default to 0x1e if it's not specified.
+    hmc5883l is a class that supports communication with an I2C-connected Honeywell HMC5883L 3-axis magenetometer/compass. The constructor for this class accepts two argements: The I2C bus ID the sensor is on which defaults to 1 and, the I2C address of the sensor, but will default to 0x1e if it's not specified.
     """
 
     # The magnetometer config variables are based on the HMC5883L datasheet
@@ -118,7 +118,7 @@ class hmc5883l:
             data = self.i2c.read_byte_data(self.__addr, register)
             
         except IOError:
-            print "hmc5338l IO Error: Failed to read HMC5883L sensor on I2C bus."
+            print "hmc5883l IO Error: Failed to read HMC5883L sensor on I2C bus."
             
         return data
     
@@ -251,7 +251,7 @@ class hmc5883l:
         """
         setOutputFreq(freq)
         
-        Set the HMC5338L's output frequency.
+        Set the HMC5883L's output frequency.
         """
         
         # Compute the byte mask to preserve original register settings, minus the ones we want to set.
@@ -269,7 +269,7 @@ class hmc5883l:
         """
         setBias(bias)
         
-        Set the HMC5338L's measurement bias mode
+        Set the HMC5883L's measurement bias mode
         """
         
         # Compute the byte mask to preserve original register settings, minus the ones we want to set.
