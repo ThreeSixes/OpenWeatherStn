@@ -1,8 +1,10 @@
+# hmc5883l class by ThreeSixes (https://github.com/ThreeSixes/py-hmc5883l)
+
 from hmc5338l import hmc5338l
 from pprint import pprint
 
 # Set up our magnetometer
-magSens = hmc5338l()
+magSens = hmc5883l()
 
 # Test everything related to config register A.
 regA = magSens.getReg(magSens.regCfgA)
@@ -31,5 +33,3 @@ pprint(xzy)
 print(hex(xzy[0]))
 print(hex(xzy[1]))
 print(hex(xzy[2]))
-
-print(str(magSens.test2sComp(-2048)))

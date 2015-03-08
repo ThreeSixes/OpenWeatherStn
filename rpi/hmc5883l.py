@@ -1,5 +1,4 @@
-
-
+# hmc5883l class by ThreeSixes (https://github.com/ThreeSixes/py-hmc5883l)
 
 ###########
 # Imports #
@@ -12,20 +11,20 @@ import smbus
 # hmc5338L class #
 ##################
 
-class hmc5338l:
+class hmc5883l:
     """
-    hmc5338l is a class that supports communication with an I2C-connected Honeywell HMC5338L 3-axis magenetometer/compass. The constructor for this class accepts two argements: The I2C bus ID the sensor is on which defaults to 1 and, the I2C address of the sensor, but will default to 0x1e if it's not specified.
+    hmc5883l is a class that supports communication with an I2C-connected Honeywell HMC5338L 3-axis magenetometer/compass. The constructor for this class accepts two argements: The I2C bus ID the sensor is on which defaults to 1 and, the I2C address of the sensor, but will default to 0x1e if it's not specified.
     """
 
     # The magnetometer config variables are based on the HMC5883L datasheet
     # http://www51.honeywell.com/aero/common/documents/myaerospacecatalog-documents/Defense_Brochures-documents/HMC5883L_3-Axis_Digital_Compass_IC.pdf
 
-    def __init__(self, i2cBus = 1, hmc5883Addr = 0x1e):
+    def __init__(self, i2cBus = 1, hmc5883lAddr = 0x1e):
         # Set up I2C / SMBus
         self.i2c = smbus.SMBus(i2cBus)
         
         # Set global address var
-        self.__addr = hmc5883Addr
+        self.__addr = hmc5883lA8addr
         
         # Confiuration registers
         self.regCfgA =  0x00
@@ -109,7 +108,7 @@ class hmc5338l:
         """
         __readReg(register)
         
-        Read a given register from the HMC5338L.
+        Read a given register from the HMC5883L.
         """
         
         data = 0
@@ -119,7 +118,7 @@ class hmc5338l:
             data = self.i2c.read_byte_data(self.__addr, register)
             
         except IOError:
-            print "hmc5338l IO Error: Failed to read HMC5338L sensor on I2C bus."
+            print "hmc5338l IO Error: Failed to read HMC5883L sensor on I2C bus."
             
         return data
     
@@ -142,13 +141,13 @@ class hmc5338l:
         """
         __writeReg(register, byte)
         
-        Write a given byte to a given register to the HMC5338L
+        Write a given byte to a given register to the HMC5883L
         """
         
         try:
             self.i2c.write_byte_data(self.__addr, register, byte)
         except IOError:
-            print "hmc5338l IO Error: Failed to write to HMC5338L sensor on I2C bus."
+            print "hmc5883l IO Error: Failed to write to HMC5883L sensor on I2C bus."
 
     def __regMask(self, part):
         """
@@ -208,7 +207,7 @@ class hmc5338l:
         retVal = [0, 0, 0]
         
         if (self.__readReg(self.regStat) | self.statLock) == self.statLock:
-            raise IOError("HMC3885L data not ready.")
+            raise IOError("HMC5883L data not ready.")
         else:
            
             # Get the desired register values.
@@ -288,7 +287,7 @@ class hmc5338l:
         """
         setGain(gain)
         
-        Set the HMC5338L's gain.
+        Set the HMC883L's gain.
         """
         
         # Compute the byte mask to preserve original register settings, minus the ones we want to set.
@@ -306,7 +305,7 @@ class hmc5338l:
         """
         setGain(mode)
         
-        Set the HMC5338L's operating mode.
+        Set the HMC5883L's operating mode.
         """
         
         # Compute the byte mask to preserve original register settings, minus the ones we want to set.
@@ -332,7 +331,4 @@ class hmc5338l:
             self.__writeReg(register, value)
         else:
             raise ValueError("HMC5883L register must be writable to set it.")
-        
-    def test2sComp(self, unsigned):
-        return self.__getSigned(unsigned)
     
