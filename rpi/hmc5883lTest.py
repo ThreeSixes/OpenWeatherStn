@@ -1,6 +1,6 @@
 # hmc5883l class by ThreeSixes (https://github.com/ThreeSixes/py-hmc5883l)
 
-from hmc5338l import hmc5338l
+from hmc5883l import hmc5883l
 from pprint import pprint
 
 # Set up our magnetometer

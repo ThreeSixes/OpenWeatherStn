@@ -24,7 +24,7 @@ class hmc5883l:
         self.i2c = smbus.SMBus(i2cBus)
         
         # Set global address var
-        self.__addr = hmc5883lA8addr
+        self.__addr = hmc5883lAddr
         
         # Confiuration registers
         self.regCfgA =  0x00
