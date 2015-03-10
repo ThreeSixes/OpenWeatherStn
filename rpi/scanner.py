@@ -47,8 +47,14 @@ class owsScanner:
         # Get data from the magentometer.
         magData = self.magSens.getXZY()
         
+        # Debug
+        pprint(magData)
+        
         # Compute heading as a cartesian value given data on the x, Y planes.
         heading = math.atan2(magData[0], magData[2]) * 180.0 / math.pi
+        
+        # Debug
+        print("Hdg: " + str(heading))
         
         # Since the heading is reported from -180 to +180 make sure we compensate for that fact
         # to return a normal heading from 0-259 degrees.
