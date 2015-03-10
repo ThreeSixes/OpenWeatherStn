@@ -253,7 +253,7 @@ class compoundSensor():
 		windMaxReading = (self.__lastData[self.i2c_windMaxMSB] << 8) | self.__lastData[self.i2c_windMaxLSB]
 		
 		# Convert the wind reading to a value in KPH
-		windSpeed = __windScale2Speed(windMaxReading)
+		windSpeed = self.__windScale2Speed(windMaxReading)
 		
 		# Return rounded windspeed.
 		return round(windSpeed, 2)
