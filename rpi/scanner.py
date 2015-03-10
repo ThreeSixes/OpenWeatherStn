@@ -2,6 +2,9 @@
 # Imports #
 ###########
 
+# We need to do some trig.
+import math
+
 # Load sensor module support.
 from hmc5883l import hmc5883l
 from compoundSensor import compoundSensor
@@ -15,7 +18,7 @@ from pprint import pprint
 
 class owsScanner:
     """
-    owsScanner - the OpenWeatherStn sensor scanner accepts one argument, magOffset which defaults to zero if not specified.
+    owsScanner - the OpenWeatherStn sensor scanner accepts one argument, magOffset a number in degrees between 0 and 359 which represents a bearing - argument defaults to zero if not specified.
     """
     
     def __init__(self, magOffset = 0):
@@ -44,10 +47,20 @@ class owsScanner:
         # Get data from the magentometer.
         magData = self.magSens.getXZY()
         
-        pprint(magData)
+        # Compute heading as a cartesian value given data on the x, Y planes.
+        heading = math.atan2(float(magData[0]), float(magData[2]))
+        
+        # Since the heading is reported from -180 to +180 make sure we compensate for that fact
+        # to return a normal heading from 0-259 degrees.
+        if heading < 0:
+            heading = 360 - heading
+        
+        # Subtract the offset from our heading.
+        heading = heading - magOffset
+        
+        # Round to one decimal place, and return.
+        return round(heading, 1)
 
-
-    
 scanner = owsScanner()
 
 pprint(scanner.getWindDir(scanner.magOffset))
