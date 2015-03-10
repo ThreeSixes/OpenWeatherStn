@@ -50,4 +50,4 @@ class owsScanner:
     
 scanner = owsScanner()
 
-pprint(scanner.getWindDir())
+pprint(scanner.getWindDir(scanner.magOffset))
