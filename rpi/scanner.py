@@ -1,3 +1,5 @@
+# OpenWeatherStn sensor scanning utlity by ThreeSixes (https://github.com/ThreeSixes/OpenWeatherStn)
+
 ###########
 # Imports #
 ###########
@@ -18,7 +20,10 @@ from pprint import pprint
 
 class owsScanner:
     """
-    owsScanner - the OpenWeatherStn sensor scanner accepts two arguments: magOffset a number in degrees between 0 and 359 which represents a bearing - argument defaults to zero if not specified, and windOffset which is an integer that specifies the DC offset of the anemometer when standing still.
+    owsScanner - the OpenWeatherStn sensor scanner class. Accepts two optional arguments.
+    
+    magOffset: a number in degrees between 0 and 359 which represents the bearing of the sensor. This defaults to 0 (true north) if not set.
+    windOffset: a number that specifies the DC offset (ADC reading as int) of the anemometer when standing still. This defaults to 67.
     """
     
     def __init__(self, magOffset = 0, windOffset = 67):
@@ -39,7 +44,9 @@ class owsScanner:
         # Magnetic sensor data (X, Z, Y)
         magData = [0, 0, 0]
         
-        # Configure magnetometer
+        # Configure magnetometer - no sample averaging, default 15 updates per second, no biasing,
+        #  the lowest gain supported (230mG/LSB keeps the sensor for saturating),
+        #  and to automatically take constant readings.
         self.windDirSens.setReg(self.windDirSens.regCfgA, (self.windDirSens.avg1 | self.windDirSens.freq15 | self.windDirSens.biasNone))
         self.windDirSens.setReg(self.windDirSens.regCfgB, self.windDirSens.gain230)
         self.windDirSens.setReg(self.windDirSens.regMode, self.windDirSens.modeCont)
@@ -62,19 +69,28 @@ class owsScanner:
         if offsetHeading > 360:
             offsetHeading = offsetHeading - 360
         
-        # Round to one decimal place, and return.
+        # Round to one decimal place, and wind heading relative to our offset.
         return round(offsetHeading, 1)
+    
+    def pollCmpdSens(self):
+        """
+        pollCmpdSens()
+        
+        Poll the compound wind sensor to get data from it. This must be executed before getWindAvgSpeed(), getWindMaxSpeed(), getRainCount(), and getAmbientLight().
+        """
+        
+        self.cmpdSens.pollAll()
     
     def getWindAvgSpeed(self):
         """
         getWindAvgSpeed()
         
-        Gets the average wind speed from the compound sensor. Returns an integer expressing wind speed in kph, rounded to two digits or "None" if the sensor is not installed.
+        Gets the average wind speed from the compound sensor. Returns an integer expressing wind speed in kph, rounded to two digits - or "None" if the sensor is not installed.
         """
         
         retVal = None
         
-        # If our sensor reports having an anemometer installed get the value.
+        # If our sensor reports having an anemometer module installed get the value.
         if self.cmpdSens.checkStatusReg(self.cmpdSens.i2cStatus_wind):
             retVal = self.cmpdSens.getWindAvg()
         
@@ -84,12 +100,12 @@ class owsScanner:
         """
         getWindMaxSpeed()
         
-        Gets the max wind speed from the compound sensor. Returns an integer expressing wind speed in kph, rounded to two digits or "None" if the sensor is not installed.
+        Gets the max wind speed from the compound sensor. Returns an integer expressing wind speed in kph, rounded to two digits - or "None" if the sensor is not installed.
         """
         
         retVal = None
         
-        # If our sensor reports having an anemometer installed get the value.
+        # If our sensor reports having an anemometer module installed get the value.
         if self.cmpdSens.checkStatusReg(self.cmpdSens.i2cStatus_wind):
             retVal = self.cmpdSens.getWindMax()
         
@@ -99,12 +115,12 @@ class owsScanner:
         """
         getRainCount()
         
-        Gets the rain counter value from the compound sensor. Returns a 32 bit integer or "None" if the sensor is not installed.
+        Gets the rain counter value from the compound sensor. Returns a 32 bit integer - or "None" if the sensor is not installed.
         """
         
         retVal = None
         
-        # If our sensor reports having the rain sensor installed get the value.
+        # If our sensor reports having the rain module installed get the value.
         if self.cmpdSens.checkStatusReg(self.cmpdSens.i2cStatus_rain):
             retVal = self.cmpdSens.getRainCount()
         
@@ -114,11 +130,11 @@ class owsScanner:
         """
         getAmbientLight()
         
-        Gets the ambient light average from the compound sensor module. Returns an 8-bit unsigned number or "None" if the light sensor is not installed.
+        Gets the ambient light average from the compound sensor module. Returns an 8-bit unsigned number - or "None" if the light sensor is not installed.
         """
         retVal = None
         
-        # If our sensor reports having the light sensor installed get the value.
+        # If our sensor reports having the light module installed get the value.
         if self.cmpdSens.checkStatusReg(self.cmpdSens.i2cStatus_light):
             retVal = self.cmpdSens.getLightAvg()
         
@@ -129,12 +145,34 @@ class owsScanner:
 # Main execution body #
 #######################
 
+# Set up our scanner object.
 scanner = owsScanner()
 
-print(" + Open Weather Station sensor scanner results +")
-print("Wind direction:     " + str(scanner.getWindDir()))
+# System test.
+print(" + Open Weather Station sensor scan test +")
+print("Checking compound sensor...")
+
+# Poll the compound sensor before displaying data from it.
+scanner.pollCmpdSens()
+
 print("Average wind speed: " + str(scanner.getWindAvgSpeed()))
 print("Maximum wind speed: " + str(scanner.getWindMaxSpeed()))
 print("Rain counter:       " + str(scanner.getRainCount()))
 print("Ambient light:      " + str(scanner.getAmbientLight()))
+# Check the wind direciton.
+print("Checking wind vein...")
+print("Wind direction:     " + str(scanner.getWindDir()))
+
+# Check the temperature and humidity.
+print("Checking temperature and humdity...")
+print("-> Module not supported.")
+
+# Check barometer.
+print("Checking barometer...")
+print("-> Module not supported.")
+
+# Check system temperature.
+print("Checking system temperature...")
+print("-> Module not supported.")
+
 print("")
