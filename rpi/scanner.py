@@ -22,18 +22,18 @@ class owsScanner:
     """
     
     def __init__(self, magOffset = 0, windOffset = 67):
-        # Anemometer ADC offset value
-        self.windOffset = windOffset
+        # Sensor heading offset to get accurate wind direction data.
+        self.__magOffset = magOffset
         
         # Set up our sensor objects
         self.windDirSens = hmc5883l()
         self.cmpdSens = compoundSensor(windOffset)
     
-    def getWindDir(self, magOffset):
+    def getWindDir(self):
         """
-        getWindDir(magOffset)
+        getWindDir()
         
-        Get the heading of the wind in degrees. The magOffset should be the direction (heading) the sensor is facing. This offset will modify the wind vein's return data to reflect a correct wind heading. Returns an integer rounded to one decimal place.
+        Get the heading of the wind in degrees. Returns an integer rounded to one decimal place.
         """
         
         # Magnetic sensor data (X, Z, Y)
@@ -56,7 +56,7 @@ class owsScanner:
             heading = 360 - abs(heading)
         
         # Add offset to heading, to adjust for the weather station's orientation relative to north.
-        offsetHeading = heading + offset
+        offsetHeading = heading + self.__magOffset
         
         # If our offset heading wraps around the heading "circle" compensate for it.
         if offsetHeading > 360:
@@ -131,4 +131,10 @@ class owsScanner:
 
 scanner = owsScanner()
 
-pprint(scanner.getWindDir(scanner.magOffset))
+print(" + Open Weather Station sensor scanner results +")
+print("Wind direction:     " + str(scanner.getWindDir()))
+print("Average wind speed: " + str(scanner.getWindAvgSpeed()))
+print("Maximum wind speed: " + str(scanner.getWindMaxSpeed()))
+print("Rain counter:       " + str(scanner.getRainCount()))
+print("Ambient light:      " + str(scanner.getAmbientLight()))
+print("")
