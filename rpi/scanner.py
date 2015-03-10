@@ -55,11 +55,19 @@ class owsScanner:
         if heading < 0:
             heading = 360 - abs(heading)
         
-        # Subtract the offset from our heading.
-        heading = heading - magOffset
+        # Add offset to heading
+        offsetHeading = heading + offset
+        
+        # If our offset heading wraps around the circle compensate for that.
+        if offsetHeading > 360:
+            offsetHeading = offsetHeading - 360
         
         # Round to one decimal place, and return.
-        return round(heading, 1)
+        return round(offsetHeading, 1)
+
+#######################
+# Main execution body #
+#######################
 
 scanner = owsScanner()
 
