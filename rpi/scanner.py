@@ -24,7 +24,7 @@ class owsScanner:
         
         # Initialize our sensor classes.
         self.magSens = hmc5883l()
-        self.cmpdSens = compoundSensor()
+        self.cmpdSens = compoundSensor(67, 0x64)
     
     def getWindDir(self, magOffset):
         """
