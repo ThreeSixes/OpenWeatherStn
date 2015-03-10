@@ -48,7 +48,7 @@ class owsScanner:
         magData = self.magSens.getXZY()
         
         # Compute heading as a cartesian value given data on the x, Y planes.
-        heading = math.atan2(float(magData[0]), float(magData[2]))
+        heading = math.atan2(float(magData[0]), float(magData[2])) * 180.0 / math.pi
         
         # Since the heading is reported from -180 to +180 make sure we compensate for that fact
         # to return a normal heading from 0-259 degrees.
