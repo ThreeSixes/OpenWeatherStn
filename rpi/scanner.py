@@ -18,16 +18,16 @@ from pprint import pprint
 
 class owsScanner:
     """
-    owsScanner - the OpenWeatherStn sensor scanner accepts one argument, magOffset a number in degrees between 0 and 359 which represents a bearing - argument defaults to zero if not specified.
+    owsScanner - the OpenWeatherStn sensor scanner accepts two arguments: magOffset a number in degrees between 0 and 359 which represents a bearing - argument defaults to zero if not specified, and windOffset which is an integer that specifies the DC offset of the anemometer when standing still.
     """
     
-    def __init__(self, magOffset = 0):
-        # Magnetic offset value
-        self.magOffset = magOffset
+    def __init__(self, magOffset = 0, windOffset = 67):
+        # Anemometer ADC offset value
+        self.windOffset = windOffset
         
         # Initialize our sensor classes.
         self.magSens = hmc5883l()
-        self.cmpdSens = compoundSensor(67, 0x64)
+        self.cmpdSens = compoundSensor(windOffset, 0x64)
     
     def getWindDir(self, magOffset):
         """
