@@ -216,21 +216,7 @@ class scannerData:
         # Pass any exception we get straight through.
         except Exception as e:
             raise e
-        
-    def createTable(self):
-        """
-        createTable()
-        
-        Creates the weather table in the database.
-        """
-        
-        try:
-            self.__dbConn.execute("CREATE TABLE weather(dts TIMESTAMP NOT NULL PRIMARY KEY, temp NUMERIC, humid NUMERIC, baro NUMERIC, rain NUMERIC, windDir numeric, windAvg numeric, windMax numeric, lightLvl numeric, sysTemp numeric);")
-            self.__dbConn.commit()
-        except Exception as e:
-            raise e
-
-        
+    
     def addRecord(self, values):
         """
         addRecord(values)
