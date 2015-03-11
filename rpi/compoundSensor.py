@@ -113,7 +113,7 @@ class compoundSensor():
 					data.append(self.i2c.read_byte_data(self.cmpdAddr, i))
 					#data.append(fakeFrame[i])
 			except IOError:
-				print "compoundSensor IO Error: Failed to read compound weather sensor on I2C bus."
+				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
 		return bytearray(data);
 	
@@ -137,7 +137,7 @@ class compoundSensor():
 				#data.append(fakeFrame[register])
 			
 			except IOError:
-				print "compoundSensor IO Error: Failed to read compound weather sensor on I2C bus."
+				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
 		return bytearray(data);
 

@@ -118,7 +118,7 @@ class hmc5883l:
             data = self.i2c.read_byte_data(self.__addr, register)
             
         except IOError:
-            print "hmc5883l IO Error: Failed to read HMC5883L sensor on I2C bus."
+            print("hmc5883l IO Error: Failed to read HMC5883L sensor on I2C bus.")
             
         return data
     
@@ -147,7 +147,7 @@ class hmc5883l:
         try:
             self.i2c.write_byte_data(self.__addr, register, byte)
         except IOError:
-            print "hmc5883l IO Error: Failed to write to HMC5883L sensor on I2C bus."
+            print("hmc5883l IO Error: Failed to write to HMC5883L sensor on I2C bus.")
 
     def __regMask(self, part):
         """
