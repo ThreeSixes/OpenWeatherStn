@@ -13,8 +13,6 @@
 import quick2wire.i2c as qI2c
 import time
 
-from pprint import pprint
-
 
 #################
 # cprMath class #
