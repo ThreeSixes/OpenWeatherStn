@@ -210,7 +210,7 @@ class scannerData:
     def __init__(self, dbFile = "db/weather.db"):
         try:
             # Connect to our SQLite database and create an object we can use to interact with it.
-            dbConn = sqlite3.connect(dbFile)
+            dbConn = sqlite3.connect(dbFile, detect_types=sqlite3.PARSE_DECLTYPES)
             self.db = dbConn.cursor()
         
         # Pass any exception we get straight through.
