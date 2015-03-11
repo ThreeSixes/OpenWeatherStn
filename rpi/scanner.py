@@ -225,7 +225,7 @@ class scannerData:
         """
         
         try:
-            pprint(self.__dbConn.execute("CREATE TABLE weather([timestamp] dts NOT NULL PRIMARY KEY, temp NUMERIC, humid NUMERIC, baro NUMERIC, rain NUMERIC, windDir numeric, windAvg numeric, windMax numeric, lightLvl numeric, sysTemp numeric);"))
+            self.__dbConn.execute("CREATE TABLE weather(dts TIMESTAMP NOT NULL PRIMARY KEY, temp NUMERIC, humid NUMERIC, baro NUMERIC, rain NUMERIC, windDir numeric, windAvg numeric, windMax numeric, lightLvl numeric, sysTemp numeric);")
             self.__dbConn.commit()
         except Exception as e:
             raise e
