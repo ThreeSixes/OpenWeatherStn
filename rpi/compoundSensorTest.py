@@ -9,7 +9,7 @@ cs.pollAll()
 
 # Get the readings and data we want.
 print("Firmware version: " + str(cs.getVersion()))
-print("Sensor status:    " + str(hex(ord(cs.getStatus()))))
+print("Sensor status:    " + str(hex(cs.getStatus())))
 print("Rain counter:     " + str(cs.getRainCount()))
 print("Wind average:     " + str(round(cs.getWindAvg(), 2)))
 print(" -> Raw:          " + str(cs.getWindAvgRaw()))
