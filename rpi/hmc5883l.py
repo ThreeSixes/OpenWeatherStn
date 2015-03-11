@@ -132,7 +132,7 @@ class hmc5883l:
         Reads a continuous range of registers from regStart to regEnd. Returns an array of integers.
         """
         
-        regRange = []
+        regRange = bytearray()
         
         # Figure out how many bytes we'll be reading.
         regCount = regEnd - regStart
