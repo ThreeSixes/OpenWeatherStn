@@ -242,9 +242,7 @@ class scannerData:
         """
         
         try:
-            self.__db.execute('INSERT INTO weather VALUES (' + values['dts'] + ',' + values['temp'] + ',' + values['humid'] + \
-                            ',' + values['baro'] + ',' + values['rain'] + ',' + values['windDir'] + ',' + values['windAvg'] +  \
-                            ',' + values['windMax'] + ',' + values['lightLvl'] + ',' + values['sysTemp'] + ')')
+            self.__db.execute('INSERT INTO weather VALUES (?,?,?,?,?,?,?,?,?,?)', values)
             
         except Exception as e:
             raise e
