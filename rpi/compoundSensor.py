@@ -10,9 +10,7 @@
 # Imports #
 ###########
 
-# We need to re-factor for Python3 and quick2wire.
-#import quick2wire as i2c
-import smbus
+import quick2wire.i2c as qI2c
 import time
 
 
@@ -27,7 +25,8 @@ class compoundSensor():
 
 	def __init__(self, windOffset, cmpdAddr = 0x64):
 		# I2C set up class-wide I2C bus
-		self.__i2c = smbus.SMBus(1)
+		self.__i2c = qI2c
+		self.__i2cMaster = qI2c.I2CMaster()
 		
 		# Sensor's I2C address
 		self.__cmpdAddr = cmpdAddr
@@ -115,8 +114,10 @@ class compoundSensor():
 				
 				# Loop through specified registers
 				for i in range(firstReg, lastReg + 1):
-					data.append(self.__i2c.read_byte_data(self.__cmpdAddr, i))
+					#data.append(self.__i2c.read_byte_data(self.__cmpdAddr, i))
 					#data.append(fakeFrame[i])
+					res = self.__i2cMaster.transaction(self.__i2c.writing_bytes(self.__cmpdAddr, i), self.__i2c.reading(self.__cmpdAddr, 1))
+					data.append(res[0])
 			except IOError:
 				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
@@ -138,7 +139,8 @@ class compoundSensor():
 		if(register >= 0) and (register < self.i2cRegSize):
 			try:
 				# Read the specific register.
-				data.append(self.__i2c.read_byte_data(self.__cmpdAddr, register))
+				res = self.__i2cMaster.transaction(self.__i2c.writing_bytes(self.__cmpdAddr, register), self.__i2c.reading(self.__cmpdAddr, 1))
+				data.append(res[0])
 				#data.append(fakeFrame[register])
 			
 			except IOError:
@@ -164,8 +166,7 @@ class compoundSensor():
 		"""
 		
 		# Read all registers, and set global lastData array.
-		self.__lastData = self.__readAll()
-	
+		self.__lastData = self.__readAll()	
 
 	def checkStatusReg(self, status):
 		"""
