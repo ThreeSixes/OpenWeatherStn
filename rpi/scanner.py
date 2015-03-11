@@ -211,7 +211,7 @@ class scannerData:
         try:
             # Connect to our SQLite database and create an object we can use to interact with it.
             self.__dbConn = sqlite3.connect(dbFile, detect_types=sqlite3.PARSE_DECLTYPES)
-            self.__db = __dbConn.cursor()
+            self.__db = self.__dbConn.cursor()
         
         # Pass any exception we get straight through.
         except Exception as e:
