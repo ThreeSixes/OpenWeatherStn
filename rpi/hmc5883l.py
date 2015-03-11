@@ -141,6 +141,9 @@ class hmc5883l:
         # Read a range of registers.
         regRange = self.__i2cMaster.transaction(self.__i2c.writing_bytes(self.__addr, regStart, regCount), self.__i2c.reading(self.__addr, regCount))
         
+        # Convert returned data to byte array.
+        regRange = bytearray(regRange[0])
+        
         pprint(regRange)
         
         return regRange
