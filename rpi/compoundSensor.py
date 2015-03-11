@@ -126,7 +126,7 @@ class compoundSensor():
 		from pprint import pprint
 		pprint(data)
 		
-		return data;
+		return bytearray(data);
 	
 	def __readReg(self, register):
 		"""
