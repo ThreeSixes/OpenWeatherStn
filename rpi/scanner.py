@@ -210,12 +210,25 @@ class scannerData:
     def __init__(self, dbFile = "db/weather.db"):
         try:
             # Connect to our SQLite database and create an object we can use to interact with it.
-            dbConn = sqlite3.connect(dbFile, detect_types=sqlite3.PARSE_DECLTYPES)
-            self.db = dbConn.cursor()
+            self.__dbConn = sqlite3.connect(dbFile, detect_types=sqlite3.PARSE_DECLTYPES)
+            self.__db = __dbConn.cursor()
         
         # Pass any exception we get straight through.
         except Exception as e:
             raise e
+        
+    def createTable(self):
+        """
+        createTable()
+        
+        Creates the weather table in the database.
+        """
+        
+        try:
+            self.__dbConn.execute("CREATE TABLE weather([timestamp] dts NOT NULL PRIMARY KEY, temp NUMERIC, humid NUMERIC, baro NUMERIC, rain NUMERIC, windDir numeric, windAvg numeric, windMax numeric, lightLvl numeric, sysTemp numeric);")
+        except Exception as e:
+            raise e
+
         
     def addRecord(self, values):
         """
@@ -229,7 +242,7 @@ class scannerData:
         """
         
         try:
-            self.db.execute('INSERT INTO weather VALUES ([timestamp] ' + values['dts'] + ',' + values['temp'] + ',' + values['humid'] + \
+            self.__db.execute('INSERT INTO weather VALUES ([timestamp] ' + values['dts'] + ',' + values['temp'] + ',' + values['humid'] + \
                             ',' + values['baro'] + ',' + values['rain'] + ',' + values['windDir'] + ',' + values['windAvg'] +  \
                             ',' + values['windMax'] + ',' + values['lightLvl'] + ',' + values['sysTemp'] + ')')
             
