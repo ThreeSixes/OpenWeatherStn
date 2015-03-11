@@ -10,6 +10,8 @@
 # Imports #
 ###########
 
+# We need to re-factor for Python3 and quick2wire.
+#import quick2wire as i2c
 import smbus
 import time
 
