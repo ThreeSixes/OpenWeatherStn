@@ -230,6 +230,7 @@ class scannerData:
         
         try:
             self.__db.execute('INSERT INTO weather(dts, temp, humid, baro, rain, windDir, windAvg, windMax, lightLvl, sysTemp) VALUES(?,?,?,?,?,?,?,?,?,?);', values)
+            print(self.__db.fetchone())
             
         except Exception as e:
             raise e
@@ -255,7 +256,6 @@ dl.addRecord(allData)
 
 # System test.
 print(" + Open Weather Station sensor scan test +")
-pprint(allData)
 
 print("Checking compound sensor...")
 
