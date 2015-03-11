@@ -9,6 +9,7 @@ import math
 
 # Load sensor module support.
 from hmc5883l import hmc5883l
+from am2315 import am2315
 from compoundSensor import compoundSensor
 
 # Pretty print
@@ -33,6 +34,10 @@ class owsScanner:
         # Set up our sensor objects
         self.windDirSens = hmc5883l()
         self.cmpdSens = compoundSensor(windOffset)
+        self.tempHumid = am2315()
+        
+        # Track temp and humidity data from our am2315.
+        self.__thData = []
     
     def getWindDir(self):
         """
@@ -140,6 +145,33 @@ class owsScanner:
         
         return retVal
     
+    def pollTempHumid(self):
+        """
+        pollTempHumid()
+        
+        Poll the AM2315 sensor to get temeperature and humidity data. This must be run before getTemp() and getHumid().
+        """
+        
+        self.__thData = self.tempHumid.getTempHumid()
+    
+    def getTemp(self):
+        """
+        getTemp()
+        
+        Get temperature in degrees celcius from weather temperature sensor. Returns an integer rounded to 1 decimal point.
+        """
+        
+        return self.__thData[0]
+    
+    def getHumid(self):
+        """
+        getHumid()
+        
+        Get relative humidity as a percentage from the weather humidity sensor. Returns and integer rounded to 1 decimal point.
+        """
+        
+        return self.__thData[1]
+    
 
 #######################
 # Main execution body #
@@ -165,7 +197,12 @@ print("Wind direction:     " + str(scanner.getWindDir()))
 
 # Check the temperature and humidity.
 print("Checking temperature and humdity...")
-print("-> Module not supported.")
+
+# Poll the AM2315 to get temperature and humidity data.
+scanner.pollTempHumid()
+
+print("Temperature (C):   " + str(scanner.getTemp()))
+print("Humidity (%RH):    " + str(scanner.getHumid()))
 
 # Check barometer.
 print("Checking barometer...")
