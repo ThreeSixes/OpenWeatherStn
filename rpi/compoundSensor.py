@@ -106,7 +106,7 @@ class compoundSensor():
 		Read a sequence of specified registers from the weather sensor. Returns a byte array.
 		"""
 		
-		data = []
+		data = bytearray()
 		
 		# Boundary and sanity check to make sure we're looking for a valid range from low to high position
 		if (firstReg >= 0) and (firstReg < (self.i2cRegSize - 1)) and (lastReg >= 1) and (lastReg < self.i2cRegSize) and (firstReg < lastReg):
@@ -123,10 +123,9 @@ class compoundSensor():
 			except IOError:
 				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
-		from pprint import pprint
 		pprint(data)
 		
-		return bytearray(data);
+		return data
 	
 	def __readReg(self, register):
 		"""
