@@ -252,6 +252,9 @@ allData = {"dts": datetime.datetime.utcnow(), "temp": scanner.getTemp(), "humid"
            "rain": scanner.getRainCount(), "windDir": scanner.getWindDir(), "windAvg": scanner.getWindAvgSpeed(), \
            "windMax": scanner.getWindMaxSpeed(), "lightLvl": scanner.getAmbientLight(), "sysTemp": scanner.getSysTemp()}
 
+# Insert all the records in our weather database.
+dl.addRecord(allData)
+
 # System test.
 print(" + Open Weather Station sensor scan test +")
 pprint(allData)
