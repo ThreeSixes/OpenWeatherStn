@@ -7,6 +7,12 @@
 # We need to do some trig.
 import math
 
+# Add SQLite3 support
+import sqlite3
+
+# Add support for date and time processing
+import datetime
+
 # Load sensor module support.
 from hmc5883l import hmc5883l
 from am2315 import am2315
@@ -172,20 +178,85 @@ class owsScanner:
         
         return self.__thData[1]
     
+    def getBaro(self):
+        """
+        getBaro()
+        
+        Dummy method in place until support for barometric readings is added. Returns None
+        """
+        
+        return None
+    
+    def getSysTemp(self):
+        """
+        getSysTemp()
+        
+        Dummy method in place until support for system temperature readings is added. Returns None
+        """
+        
+        return None
+
+##########################
+# Data layer for scanner #
+##########################
+
+class scannerData:
+    """
+    scannerData is a data layer class for the sensor scanner that accepts one optional argument:
+        
+    dbFile is a string containing the path to the weather Sqlite3 database file.
+    """
+    
+    def __init__(self, dbFile = "db/weather.db"):
+        try:
+            # Connect to our SQLite database and create an object we can use to interact with it.
+            dbConn = sqlite3.connect(dbFile)
+            self.db = dbConn.cursor()
+        
+        # Pass any exception we get straight through.
+        except Exception as e:
+            raise e
+        
+    def addRecord(self, values):
+        """
+        addRecord(values)
+        
+        Add a record to the database containing the information in values. Values should be an assoc. array containing the following elements:
+        
+        {"dts", "temp", "humid", "baro", "rain", "windDir", "windAvg", "windMax", "lightLvl", "sysTemp"}
+        
+        Null values for any of these keys, except dts are acceptable.
+        """
+        
+        try:
+            self.db.execute('INSERT INTO weather VALUES (' + values['dts'] + ',' + values['temp'] + ',' + values['humid'] + \
+                            ',' + values['baro'] + ',' + values['rain'] + ',' + values['windDir'] + ',' + values['windAvg'] +  \
+                            ',' + values['windMax'] + ',' + values['lightLvl'] + ',' + values['sysTemp'] + ')')
+            
+        except Exception as e:
+            raise e
 
 #######################
 # Main execution body #
 #######################
 
-# Set up our scanner object.
+# Set up our scanner object and data layer.
 scanner = owsScanner()
+dl = scannerData()
+
+# Poll sensors that require an initial poll.
+scanner.pollCmpdSens()
+scanner.pollTempHumid()
+
+allData = {"dts": datetime.datetime.utcnow(), "temp": scanner.getTemp(), "humid": scanner.getHumid(), "baro": scanner.getBaro(), \
+           "rain": scanner.getRainCount(), "windDir": scanner.getWindDir(), "windAvg": scanner.getWindAvgSpeed(), \
+           "windMax": scanner.getWindMaxSpeed(), "lightLvl": scanner.getAmbientLight(), "sysTemp": scanner.getSysTemp()}
 
 # System test.
 print(" + Open Weather Station sensor scan test +")
-print("Checking compound sensor...")
+pprint(allData)
 
-# Poll the compound sensor before displaying data from it.
-scanner.pollCmpdSens()
+print("Checking compound sensor...")
 
 print("-> Average wind speed (kph): " + str(scanner.getWindAvgSpeed()))
 print("-> Maximum wind speed (kph): " + str(scanner.getWindMaxSpeed()))
@@ -199,18 +270,15 @@ print("-> Wind direction (deg):     " + str(scanner.getWindDir()))
 # Check the temperature and humidity.
 print("\nChecking temperature and humdity...")
 
-# Poll the AM2315 to get temperature and humidity data.
-scanner.pollTempHumid()
-
 print("-> Temperature (C):          " + str(scanner.getTemp()))
 print("-> Humidity (%RH):           " + str(scanner.getHumid()))
 
 # Check barometer.
 print("\nChecking barometer...")
-print("-> Module not supported.")
+print("-> Barometirc press. (mPa):  " + str(scanner.getBaro()))
 
 # Check system temperature.
 print("\nChecking system temperature...")
-print("-> Module not supported.")
+print("-> System temperature (C):   " + str(scanner.getSysTemp()))
 
 print("")
