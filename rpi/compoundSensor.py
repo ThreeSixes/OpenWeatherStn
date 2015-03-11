@@ -25,13 +25,16 @@ class compoundSensor():
 
 	def __init__(self, windOffset, cmpdAddr = 0x64):
 		# I2C set up class-wide I2C bus
-		self.i2c = smbus.SMBus(1)
+		self.__i2c = smbus.SMBus(1)
 		
 		# Sensor's I2C address
-		self.cmpdAddr = cmpdAddr
+		self.__cmpdAddr = cmpdAddr
 		
 		# Wind offset
-		self.windOffset = windOffset
+		self.__windOffset = windOffset
+		
+		# Hold last recieved sample data.
+		self.__lastData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 		
 		### Register settings and definitions ###
 		
@@ -59,9 +62,9 @@ class compoundSensor():
 		self.i2cStatus_rain =     0x08
 		self.i2cStatus_light =    0x10
 
-	def valMap(self, subject, subjectMin, subjectMax, targetMin, targetMax):
+	def __valMap(self, subject, subjectMin, subjectMax, targetMin, targetMax):
 		"""
-		valMap(subject, subjectMin, subjectMax, targetMin, targetMax)
+		__valMap(subject, subjectMin, subjectMax, targetMin, targetMax)
 		
 		Maps values from variable subject with a min and max, to a target range between min and max. This is a port of the Arduino map() function.
 		See: http://arduino.cc/en/reference/map
@@ -69,9 +72,9 @@ class compoundSensor():
 		
 		return (subject - subjectMin) * (targetMax - targetMin) / (subjectMax - subjectMin) + targetMin
 
-	def windScale2Speed(self, windVal):
+	def __windScale2Speed(self, windVal):
 		"""
-		windScale2Speed(windVal)
+		__windScale2Speed(windVal)
 		
 		Converts A/D converter wind reading to speed in KM/H.
 		"""
@@ -79,23 +82,23 @@ class compoundSensor():
 		windSpeed = -1
 		
 		# Implement a floor since the ADC wanders a bit.
-		if windVal < self.windOffset:
-			windVal = self.windOffset
+		if windVal < self.__windOffset:
+			windVal = self.__windOffset
 		
 		# Drop value by offset
-		windVal = windVal - self.windOffset
+		windVal = windVal - self.__windOffset
 		
 		# Convert ADC readings to a wind speed in meters per second.
-		windSpeed = self.valMap(windVal, 0.0, 328.0, 0.0, 32.0)
+		windSpeed = self.__valMap(windVal, 0.0, 328.0, 0.0, 32.0)
 		
 		# Convert wind speed from meters/sec to km/h (1 m/S = 3.6 km/h)
 		windSpeed = windSpeed * 3.6
 		
 		return windSpeed
 
-	def readRange(self, firstReg, lastReg):
+	def __readRange(self, firstReg, lastReg):
 		"""
-		readRange()
+		__readRange()
 		
 		Read a sequence of specified registers from the weather sensor. Returns a byte array.
 		"""
@@ -110,16 +113,16 @@ class compoundSensor():
 				
 				# Loop through specified registers
 				for i in range(firstReg, lastReg + 1):
-					data.append(self.i2c.read_byte_data(self.cmpdAddr, i))
+					data.append(self.__i2c.read_byte_data(self.__cmpdAddr, i))
 					#data.append(fakeFrame[i])
 			except IOError:
 				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
 		return bytearray(data);
 	
-	def readReg(self, register):
+	def __readReg(self, register):
 		"""
-		readReg(register)
+		__readReg(register)
 		
 		Read a specified register from the weather sensor. Returns a byte array..
 		"""
@@ -133,7 +136,7 @@ class compoundSensor():
 		if(register >= 0) and (register < self.i2cRegSize):
 			try:
 				# Read the specific register.
-				data.append(self.i2c.read_byte_data(self.cmpdAddr, register))
+				data.append(self.__i2c.read_byte_data(self.__cmpdAddr, register))
 				#data.append(fakeFrame[register])
 			
 			except IOError:
@@ -141,28 +144,38 @@ class compoundSensor():
 		
 		return bytearray(data);
 
-	def readAll(self):
+	def __readAll(self):
 		"""
-		getAll()
+		__readAll()
 		
 		Get all registers from the compound sensor module. Returns a byte array containg 12 bytes.
 		"""
 		
 		# Read all the bytes.
-		return self.readRange(self.i2c_fwMajor, self.i2c_lightAvg)
+		return self.__readRange(self.i2c_fwMajor, self.i2c_lightAvg)
 	
+	def pollAll(self):
+		"""
+		pollAll()
+		
+		Poll all registers, and store the rast recieved value in our global __lastData array.
+		"""
+		
+		# Read all registers, and set global lastData array.
+		self.__lastData = self.__readAll()
+	
+
 	def checkStatusReg(self, status):
 		"""
 		checkStatusReg(status)
 		
-		Checks the status register to see if a given status is set. Returns true or false.
+		Checks the status register to see if given status[es] bit(s) are set. Returns true or false.
 		"""
 		
 		retVal = False
 		
-		statusByte = self.readReg(self.i2c_status)
-		
-		if int(statusByte[0] & status) == status:
+		# See if the status bits we set are in fact all set.
+		if int(self.__lastData[self.i2c_status] & status) == status:
 			retVal = True
 		
 		return retVal
@@ -174,9 +187,8 @@ class compoundSensor():
 		Get status byte. Returns a byte array.
 		"""
 		
-		statusByte = self.readReg(self.i2c_status)
-		
-		return bytearray(statusByte)
+		# Return the status byte.
+		return self.__lastData[self.i2c_status]
 
 	def getVersion(self):
 		"""
@@ -185,9 +197,8 @@ class compoundSensor():
 		Get the sensor's firmware version. Returns a version number as major.minor
 		"""
 		
-		verRaw = self.readRange(self.i2c_fwMajor, self.i2c_fwMinor)
-		
-		return verRaw[0] + verRaw[1] / 10.0
+		# Figure out the firmware version using the major and minor versions.
+		return self.__lastData[self.i2c_fwMajor] + self.__lastData[self.i2c_fwMinor] / 10.0
 	
 	def getRainCount(self):
 		"""
@@ -197,9 +208,11 @@ class compoundSensor():
 		# Make sure we have stable output.
 		if ~self.checkStatusReg(self.i2cStatus_data):
 			time.sleep(.1)
+			self.pollAll()
 		
-		rainRaw = self.readRange(self.i2c_rainMSB, self.i2c_rainLSB)
-		rainCount = (rainRaw[0] << 24) | (rainRaw[1] << 16) | (rainRaw[2] << 8) | rainRaw[3]
+		# Put together a 32-bit unsigned integer representing the rain counter.
+		rainCount = (self.__lastData[self.i2c_rainMSB] << 24) | (self.__lastData[self.i2c_rain2SB] << 16) | \
+			(self.__lastData[self.i2c_rain3SB] << 8) | self.__lastData[self.i2c_rainLSB]
 		
 		return rainCount
 
@@ -207,78 +220,77 @@ class compoundSensor():
 		"""
 		readWindAvg()
 		
-		Get average wind speed data registers from the compound sensor module. Returns wind speed in kph.
+		Get average wind speed data registers from the compound sensor module. Returns wind speed in kph, rounded to two decimal places.
 		"""
 		
 		# Make sure we have stable output.
 		if ~self.checkStatusReg(self.i2cStatus_data):
 			time.sleep(.1)
+			self.pollAll()
 		
 		# Grab the average for the wind data and convert it to an int
-		windAvgRaw = self.readRange(self.i2c_windAvgMSB, self.i2c_windAvgLSB)
-		windAvgReading = (windAvgRaw[0] << 8) | windAvgRaw[1]
+		windAvgReading = (self.__lastData[self.i2c_windAvgMSB] << 8) | self.__lastData[self.i2c_windAvgLSB]
 		
 		# Convert the wind reading to a value in KPH
-		windSpeed = self.windScale2Speed(windAvgReading)
+		windSpeed = self.__windScale2Speed(windAvgReading)
 		
-		return windSpeed
+		# Return rounded windspeed.
+		return round(windSpeed, 2)
 	
 	def getWindMax(self):
 		"""
 		readWindMax()
 		
-		Get max wind speed data registers from the compound sensor module. Returns wind speed in kph.
+		Get max wind speed data registers from the compound sensor module. Returns wind speed in kph, rounded to two decimal places.
 		"""
 		
 		# Make sure we have stable output.
 		if ~self.checkStatusReg(self.i2cStatus_data):
 			time.sleep(.1)
+			self.pollAll()
 		
 		# Grab the average for the wind data and convert it to an int
-		windMaxRaw = self.readRange(self.i2c_windMaxMSB, self.i2c_windMaxLSB)
-		windMaxReading = (windMaxRaw[0] << 8) | windMaxRaw[1]
+		windMaxReading = (self.__lastData[self.i2c_windMaxMSB] << 8) | self.__lastData[self.i2c_windMaxLSB]
 		
 		# Convert the wind reading to a value in KPH
-		windSpeed = self.windScale2Speed(windMaxReading)
+		windSpeed = self.__windScale2Speed(windMaxReading)
 		
-		return windSpeed
+		# Return rounded windspeed.
+		return round(windSpeed, 2)
 	
 	def getWindAvgRaw(self):
 		"""
 		readWindAvgRaw()
 		
-		Get average wind speed data registers from the compound sensor module. Returns the decimal value of the register.
+		Get average wind speed data registers from the compound sensor module. Returns the integer value of the register's MSB and LSB added together.
 		"""
 		
 		# Make sure we have stable output.
 		if ~self.checkStatusReg(self.i2cStatus_data):
 			time.sleep(.1)
+			self.pollAll()
 		
 		# Grab the average for the wind data and convert it to an int
-		windAvgRaw = self.readRange(self.i2c_windAvgMSB, self.i2c_windAvgLSB)
-		# Convert the byte array to an int.
-		windAvgReading = (windAvgRaw[0] << 8) | windAvgRaw[1]
+		windAvgRaw = (self.__lastData[self.i2c_windAvgMSB] << 8) | self.__lastData[self.i2c_windAvgLSB]
 		
-		return int(windAvgReading)
+		return int(windAvgRaw)
 	
 	def getWindMaxRaw(self):
 		"""
 		readWindMax()
 		
-		Get max wind speed data registers from the compound sensor module. Returns the decimal value of the register.
+		Get max wind speed data registers from the compound sensor module. Returns the integer value of the register's MSB and LSB added together.
 		"""
 		
 		# Make sure we have stable output.
 		if ~self.checkStatusReg(self.i2cStatus_data):
 			time.sleep(.1)
+			self.pollAll()
 		
 		# Grab the average for the wind data and convert it to an int
-		windMaxRaw = self.readRange(self.i2c_windMaxMSB, self.i2c_windMaxLSB)
+		windMaxRaw = (self.__lastData[self.i2c_windMaxMSB] << 8) | self.__lastData[self.i2c_windMaxLSB]
 		
-		# Convert the byte array to an int.
-		windMaxReading = (windMaxRaw[0] << 8) | windMaxRaw[1]
-		
-		return int(windMaxReading)
+		return int(windMaxRaw)
 	
 	def getLightAvg(self):
 		"""
@@ -290,8 +302,9 @@ class compoundSensor():
 		# Make sure we have stable output.
 		if ~self.checkStatusReg(self.i2cStatus_data):
 			time.sleep(.1)
+			self.pollAll()
 		
 		# Grab average light data
-		lightAvgRaw = self.readReg(self.i2c_lightAvg)
+		lightAvgRaw = self.__lastData[self.i2c_lightAvg]
 		
-		return lightAvgRaw[0]
+		return lightAvgRaw

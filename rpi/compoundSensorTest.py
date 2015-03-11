@@ -4,6 +4,10 @@ from compoundSensor import compoundSensor
 # Compound sensor object, baseline wind value of 67.
 cs = compoundSensor(74)
 
+# Poll the sensor so the values in the sensor can be handled and decoded.
+cs.pollAll()
+
+# Get the readings and data we want.
 print("Firmware version: " + str(cs.getVersion()))
 print("Sensor status:    " + str(hex(ord(cs.getStatus()))))
 print("Rain counter:     " + str(cs.getRainCount()))
