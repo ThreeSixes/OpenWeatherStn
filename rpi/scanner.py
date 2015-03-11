@@ -234,9 +234,9 @@ class scannerData:
         """
         addRecord(values)
         
-        Add a record to the database containing the information in values. Values should be an assoc. array containing the following elements:
+        Add a record to the database containing the information in values. Values should be a tuple containing the following elements:
         
-        {"dts", "temp", "humid", "baro", "rain", "windDir", "windAvg", "windMax", "lightLvl", "sysTemp"}
+        ("dts", "temp", "humid", "baro", "rain", "windDir", "windAvg", "windMax", "lightLvl", "sysTemp")
         
         Null values for any of these keys, except dts are acceptable.
         """
@@ -261,9 +261,9 @@ dl = scannerData()
 scanner.pollCmpdSens()
 scanner.pollTempHumid()
 
-allData = {"dts": datetime.datetime.utcnow(), "temp": scanner.getTemp(), "humid": scanner.getHumid(), "baro": scanner.getBaro(), \
-           "rain": scanner.getRainCount(), "windDir": scanner.getWindDir(), "windAvg": scanner.getWindAvgSpeed(), \
-           "windMax": scanner.getWindMaxSpeed(), "lightLvl": scanner.getAmbientLight(), "sysTemp": scanner.getSysTemp()}
+allData = (datetime.datetime.utcnow(), scanner.getTemp(), scanner.getHumid(), scanner.getBaro(), \
+           scanner.getRainCount(), scanner.getWindDir(), scanner.getWindAvgSpeed(), \
+           scanner.getWindMaxSpeed(), scanner.getAmbientLight(), scanner.getSysTemp())
 
 # Insert all the records in our weather database.
 dl.addRecord(allData)
