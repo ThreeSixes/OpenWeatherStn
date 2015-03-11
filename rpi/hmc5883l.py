@@ -136,7 +136,7 @@ class hmc5883l:
         regRange = ""
         
         # Figure out how many bytes we'll be reading.
-        regCount = regEnd - regStart
+        regCount = (regEnd - regStart) + 1
         
         print(regCount)
         
