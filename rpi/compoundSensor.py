@@ -123,8 +123,6 @@ class compoundSensor():
 			except IOError:
 				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
-		pprint(data)
-		
 		return data
 	
 	def __readReg(self, register):
