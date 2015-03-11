@@ -175,13 +175,18 @@ class hmc5883l:
         """
         __getSigned(number)
         
-        Converts the reading from the magnetometer to a signed int. This is required because python doesn't see the AND'd values as a two's compliment signed binary number.
+        Converts the reading from the magnetometer to a signed int. This is required because python doesn't see the AND'd values as a two's compliment signed binary number. Also supports returning 4096 in the event an axis is saturated.
         """
         
         signednum = 0
         
-        if unsigned > 2047:
+        # If our axis is reporting saturated
+        if unsigned == 4096:
+            signednum = unsigned
+        # Else, keep going.
+        elif unsigned > 2047:
             signednum = unsigned - 65535
+        # No need to change sign number is already positive.
         else:
             signednum = unsigned
         
