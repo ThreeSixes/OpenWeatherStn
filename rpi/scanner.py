@@ -231,7 +231,6 @@ class scannerData:
         try:
             self.__db.execute('INSERT INTO weather(dts, temp, humid, baro, rain, windDir, windAvg, windMax, lightLvl, sysTemp) VALUES(?,?,?,?,?,?,?,?,?,?);', values)
             self.__dbConn.commit()
-            print(self.__db.fetchone())
             
         except Exception as e:
             raise e
