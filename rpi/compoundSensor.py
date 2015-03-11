@@ -119,11 +119,14 @@ class compoundSensor():
 					#data.append(self.__i2c.read_byte_data(self.__cmpdAddr, i))
 					#data.append(fakeFrame[i])
 					res = self.__i2cMaster.transaction(self.__i2c.writing_bytes(self.__cmpdAddr, i), self.__i2c.reading(self.__cmpdAddr, 1))
-					pprint(res)
+					data.append(res[0])
 			except IOError:
 				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
-		return bytearray(data);
+		from pprint import pprint
+		pprint(data)
+		
+		return data;
 	
 	def __readReg(self, register):
 		"""
