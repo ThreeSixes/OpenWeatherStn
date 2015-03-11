@@ -187,29 +187,30 @@ print("Checking compound sensor...")
 # Poll the compound sensor before displaying data from it.
 scanner.pollCmpdSens()
 
-print("Average wind speed (kph): " + str(scanner.getWindAvgSpeed()))
-print("Maximum wind speed (kph): " + str(scanner.getWindMaxSpeed()))
-print("Rain counter:             " + str(scanner.getRainCount()))
-print("Ambient light:            " + str(scanner.getAmbientLight()))
+print("-> Average wind speed (kph): " + str(scanner.getWindAvgSpeed()))
+print("-> Maximum wind speed (kph): " + str(scanner.getWindMaxSpeed()))
+print("-> Rain counter:             " + str(scanner.getRainCount()))
+print("-> Ambient light:            " + str(scanner.getAmbientLight()))
+
 # Check the wind direciton.
-print("Checking wind vein...")
-print("Wind direction (deg):     " + str(scanner.getWindDir()))
+print("\nChecking wind vein...")
+print("-> Wind direction (deg):     " + str(scanner.getWindDir()))
 
 # Check the temperature and humidity.
-print("Checking temperature and humdity...")
+print("\nChecking temperature and humdity...")
 
 # Poll the AM2315 to get temperature and humidity data.
 scanner.pollTempHumid()
 
-print("Temperature (C):          " + str(scanner.getTemp()))
-print("Humidity (%RH):           " + str(scanner.getHumid()))
+print("-> Temperature (C):          " + str(scanner.getTemp()))
+print("-> Humidity (%RH):           " + str(scanner.getHumid()))
 
 # Check barometer.
-print("Checking barometer...")
+print("\nChecking barometer...")
 print("-> Module not supported.")
 
 # Check system temperature.
-print("Checking system temperature...")
+print("\nChecking system temperature...")
 print("-> Module not supported.")
 
 print("")
