@@ -5,6 +5,7 @@
 ###########
 
 import quick2wire.i2c as qI2c
+from pprint import pprint
 
 ##################
 # hmc5883L class #
@@ -139,6 +140,8 @@ class hmc5883l:
         
         # Read a range of registers.
         regRange = bytearray(self.__i2cMaster.transaction(self.__i2c.writing_bytes(self.__addr, regStart, regCount), self.__i2c.reading(self.__addr, regCount)))
+        
+        pprint(regRange)
         
         return regRange
     
