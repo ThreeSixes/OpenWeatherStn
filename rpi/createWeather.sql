@@ -1,5 +1,5 @@
 CREATE TABLE weather(
-    dts NUMERIC,
+    dts DATE,
     temp NUMERIC,
     humid NUMERIC,
     baro NUMERIC,
