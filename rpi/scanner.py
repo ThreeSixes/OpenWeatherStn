@@ -242,7 +242,7 @@ class scannerData:
         """
         
         try:
-            self.__db.execute('INSERT INTO weather VALUES ([timestamp] ' + values['dts'] + ',' + values['temp'] + ',' + values['humid'] + \
+            self.__db.execute('INSERT INTO weather VALUES (' + values['dts'] + ',' + values['temp'] + ',' + values['humid'] + \
                             ',' + values['baro'] + ',' + values['rain'] + ',' + values['windDir'] + ',' + values['windAvg'] +  \
                             ',' + values['windMax'] + ',' + values['lightLvl'] + ',' + values['sysTemp'] + ')')
             
