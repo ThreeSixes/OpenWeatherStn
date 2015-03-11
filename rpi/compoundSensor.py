@@ -13,6 +13,8 @@
 import quick2wire.i2c as qI2c
 import time
 
+from pprint import pprint
+
 
 #################
 # cprMath class #
@@ -117,7 +119,7 @@ class compoundSensor():
 					#data.append(self.__i2c.read_byte_data(self.__cmpdAddr, i))
 					#data.append(fakeFrame[i])
 					res = self.__i2cMaster.transaction(self.__i2c.writing_bytes(self.__cmpdAddr, i), self.__i2c.reading(self.__cmpdAddr, 1))
-					data.append(res[0])
+					pprint(res)
 			except IOError:
 				print("compoundSensor IO Error: Failed to read compound weather sensor on I2C bus.")
 		
