@@ -276,7 +276,7 @@ print("-> Humidity (%RH):           " + str(scanner.getHumid()))
 
 # Check barometer.
 print("\nChecking barometer...")
-print("-> Barometirc press. (mPa):  " + str(scanner.getBaro()))
+print("-> Barometirc press. (kPa):  " + str(scanner.getBaro()))
 
 # Check system temperature.
 print("\nChecking system temperature...")
