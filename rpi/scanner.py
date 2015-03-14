@@ -109,6 +109,21 @@ class owsScanner:
         
         return retVal
     
+    def getWindAvgRaw(self):
+        """
+        getWindAvgRaw()
+        
+        Gets the average wind raw data from the compound sensor. Returns an unsigned integer with 10 bits of data representing the average raw ADC reading for the last sample period. Returns None of the anemometer isn't installed.
+        """
+        
+        retVal = None
+        
+        # If our sensor reports having an anemometer module installed get the value.
+        if self.cmpdSens.checkStatusReg(self.cmpdSens.i2cStatus_wind):
+            retVal = self.cmpdSens.getWindAvgRaw()
+        
+        return retVal
+    
     def getWindMaxSpeed(self):
         """
         getWindMaxSpeed()
@@ -121,6 +136,21 @@ class owsScanner:
         # If our sensor reports having an anemometer module installed get the value.
         if self.cmpdSens.checkStatusReg(self.cmpdSens.i2cStatus_wind):
             retVal = self.cmpdSens.getWindMax()
+        
+        return retVal
+    
+    def getWindMaxRaw(self):
+        """
+        getWindMaxRaw()
+        
+        Gets the max wind raw data from the compound sensor. Returns an unsigned integer with 10 bits of data representing the max raw ADC reading for the last sample period. Returns None of the anemometer isn't installed.
+        """
+        
+        retVal = None
+        
+        # If our sensor reports having an anemometer module installed get the value.
+        if self.cmpdSens.checkStatusReg(self.cmpdSens.i2cStatus_wind):
+            retVal = self.cmpdSens.getWindMaxRaw()
         
         return retVal
     
@@ -262,6 +292,8 @@ while(noSuccess and attemptCount < 2):
         # Grab sensor data.
         windAvgSpd = scanner.getWindAvgSpeed()
         windMaxSpd = scanner.getWindMaxSpeed()
+        windAvgRaw = scanner.getWindAvgRaw()
+        windMaxRaw = scanner.getWindMaxRaw()
         rainCt = scanner.getRainCount()
         lightAmb = scanner.getAmbientLight()
         
@@ -278,7 +310,7 @@ while(noSuccess and attemptCount < 2):
     
 # If we didn't get good data, set everything to None to keep the program from blowing up.
 if noSuccess:
-    windAvgSpd, windMaxSpd, rainCt, lightAmb = None
+    windAvgSpd, windMaxSpd, windAvgRaw, windMaxRaw, rainCt, lightAmb = None
 else:
     # If we failed reset noSuccess for the next sensor.
     noSuccess = True
@@ -409,6 +441,9 @@ print("Checking compound sensor...")
 
 print("-> Average wind speed (kph): " + str(windAvgSpd))
 print("-> Maximum wind speed (kph): " + str(windMaxSpd))
+print("-> Average wind raw value:   " + str(windAvgRaw))
+print("-> Maximum wind raw value:   " + str(windMaxRaw))
+
 print("-> Rain counter:             " + str(rainCt))
 print("-> Ambient light:            " + str(lightAmb))
 
