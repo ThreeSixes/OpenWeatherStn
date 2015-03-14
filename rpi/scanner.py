@@ -16,6 +16,7 @@ import datetime
 # Load sensor module support.
 from hmc5883l import hmc5883l
 from am2315 import am2315
+from mpl115a2 import mpl115a2
 from compoundSensor import compoundSensor
 
 # Pretty print
@@ -41,6 +42,7 @@ class owsScanner:
         self.windDirSens = hmc5883l()
         self.cmpdSens = compoundSensor(windOffset)
         self.tempHumid = am2315()
+        self.baroSens = mpl115a2()
         
         # Track temp and humidity data from our am2315.
         self.__thData = []
@@ -182,10 +184,12 @@ class owsScanner:
         """
         getBaro()
         
-        Dummy method in place until support for barometric readings is added. Returns None
+        Get barometirc pressure in kPa. Returns a number rounded to two decimal points.
         """
         
-        return None
+        retVal = self.baroSens.getPressTemp()
+        
+        return retVal[0]
     
     def getSysTemp(self):
         """
