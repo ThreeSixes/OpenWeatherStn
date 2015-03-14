@@ -31,10 +31,10 @@ class owsScanner:
     owsScanner - the OpenWeatherStn sensor scanner class. Accepts two optional arguments.
     
     magOffset: a number in degrees between 0 and 359 which represents the bearing of the sensor. This defaults to 0 (true north) if not set.
-    windOffset: a number that specifies the DC offset (ADC reading as int) of the anemometer when standing still. This defaults to 75.
+    windOffset: a number that specifies the DC offset (ADC reading as int) of the anemometer when standing still. This defaults to 79.
     """
     
-    def __init__(self, magOffset = 0, windOffset = 75):
+    def __init__(self, magOffset = 0, windOffset = 79):
         # Sensor heading offset to get accurate wind direction data.
         self.__magOffset = magOffset
         
