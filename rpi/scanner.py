@@ -243,15 +243,159 @@ class scannerData:
 scanner = owsScanner()
 dl = scannerData()
 
-# Poll sensors that require an initial poll.
-scanner.pollCmpdSens()
-scanner.pollTempHumid()
+# Set loop control var #1
+noSuccess = True
 
-allData = (datetime.datetime.utcnow(), scanner.getTemp(), scanner.getHumid(), scanner.getBaro(), \
-           scanner.getRainCount(), scanner.getWindDir(), scanner.getWindAvgSpeed(), \
-           scanner.getWindMaxSpeed(), scanner.getAmbientLight(), scanner.getSysTemp())
+# Set loop control var #2
+attemptCount = 0
 
-# Insert all the records in our weather database.
+# Try to read the compound sensor until we have good data OR we fail twice.
+while(noSuccess and attemptCount < 2):
+    try:
+        # Poll the compound sensor and grab data from it.
+        scanner.pollCmpdSens()
+        
+        # Grab sensor data.
+        windAvgSpd = scanner.getWindAvgSpeed()
+        windMaxSpd = scanner.getWindMaxSpeed()
+        rainCt = scanner.getRainCount()
+        lightAmb = scanner.getAmbientLight()
+        
+        # If nothing has blown up so far, flag the loop to exit.
+        noSuccess = False
+        
+    except Exception as e:
+        # D'oh. Log the exception or something.
+        print("Exception trying to poll compound sensor:")
+        pprint(e)
+        
+        # Increment our attempt counter.
+        attemptCount = attemptCount + 1
+    
+# If we didn't get good data, set everything to None to keep the program from blowing up.
+if noSuccess:
+    windAvgSpd, windMaxSpd, rainCt, lightAmb = None
+else:
+    # If we failed reset noSuccess for the next sensor.
+    noSuccess = True
+
+# Reset the attempt counter.
+attemptCount = 0
+
+# Try to read the wind vein sensor until we have good data OR we fail twice.
+while(noSuccess and attemptCount < 2):
+    try:
+        # Grab sensor data.
+        windDir = scanner.getWindDir()
+        
+        # If nothing has blown up so far, flag the loop to exit.
+        noSuccess = False
+        
+    except Exception as e:
+        # D'oh. Log the exception or something.
+        print("Exception trying to poll wind vein:")
+        pprint(e)
+        
+        # Increment our attempt counter.
+        attemptCount = attemptCount + 1
+    
+# If we didn't get good data, set everything to None to keep the program from blowing up.
+if noSuccess:
+    windDir = None
+else:
+    # If we failed reset noSuccess for the next sensor.
+    noSuccess = True
+
+# Reset the attempt counter.
+attemptCount = 0
+
+# Try to read the temp/humidity sensor until we have good data OR we fail twice.
+while(noSuccess and attemptCount < 2):
+    try:
+        # Poll the compound sensor and grab data from it.
+        scanner.pollTempHumid()
+        
+        # Grab sensor data.
+        temperature = scanner.getTemp()
+        humidity = scanner.getHumid()
+         
+        # If nothing has blown up so far, flag the loop to exit.
+        noSuccess = False
+        
+    except Exception as e:
+        # D'oh. Log the exception or something.
+        print("Exception trying to poll temperature and humidity sensor:")
+        pprint(e)
+        
+        # Increment our attempt counter.
+        attemptCount = attemptCount + 1
+    
+# If we didn't get good data, set everything to None to keep the program from blowing up.
+if noSuccess:
+    temperature, humidity = None
+else:
+    # If we failed reset noSuccess for the next sensor.
+    noSuccess = True
+
+# Reset the attempt counter.
+attemptCount = 0
+
+# Try to read the barometer sensor until we have good data OR we fail twice.
+while(noSuccess and attemptCount < 2):
+    try:
+        # Grab sensor data.
+        baroPressure = scanner.getBaro()
+         
+        # If nothing has blown up so far, flag the loop to exit.
+        noSuccess = False
+        
+    except Exception as e:
+        # D'oh. Log the exception or something.
+        print("Exception trying to poll barometer:")
+        pprint(e)
+        
+        # Increment our attempt counter.
+        attemptCount = attemptCount + 1
+    
+# If we didn't get good data, set everything to None to keep the program from blowing up.
+if noSuccess:
+    baroPressure = None
+else:
+    # If we failed reset noSuccess for the next sensor.
+    noSuccess = True
+
+# Reset the attempt counter.
+attemptCount = 0
+
+# Try to read the system thermometer sensor until we have good data OR we fail twice.
+while(noSuccess and attemptCount < 2):
+    try:
+        # Grab sensor data.
+        sysTemp = scanner.getSysTemp()
+        
+        # If nothing has blown up so far, flag the loop to exit.
+        noSuccess = False
+        
+    except Exception as e:
+        # D'oh. Log the exception or something.
+        print("Exception trying to poll system thermometer:")
+        pprint(e)
+        
+        # Increment our attempt counter.
+        attemptCount = attemptCount + 1
+    
+# If we didn't get good data, set everything to None to keep the program from blowing up.
+if noSuccess:
+    sysTemp = None
+else:
+    # If we failed reset noSuccess for the next sensor.
+    noSuccess = True
+
+# Create a tuple containing our data.
+allData = (datetime.datetime.utcnow(), temperature, humidity, baroPressure, \
+           rainCt, windDir, windAvgSpd, windMaxSpd, lightAmb, sysTemp)
+
+# Insert the tuple into the database.
 dl.addRecord(allData)
 
 # System test.
@@ -259,27 +403,27 @@ print(" + Open Weather Station sensor scan test +")
 
 print("Checking compound sensor...")
 
-print("-> Average wind speed (kph): " + str(scanner.getWindAvgSpeed()))
-print("-> Maximum wind speed (kph): " + str(scanner.getWindMaxSpeed()))
-print("-> Rain counter:             " + str(scanner.getRainCount()))
-print("-> Ambient light:            " + str(scanner.getAmbientLight()))
+print("-> Average wind speed (kph): " + str(windAvgSpd))
+print("-> Maximum wind speed (kph): " + str(windMaxSpd))
+print("-> Rain counter:             " + str(rainCt))
+print("-> Ambient light:            " + str(lightAmb))
 
 # Check the wind direciton.
 print("\nChecking wind vein...")
-print("-> Wind direction (deg):     " + str(scanner.getWindDir()))
+print("-> Wind direction (deg):     " + str(windDir))
 
 # Check the temperature and humidity.
 print("\nChecking temperature and humdity...")
 
-print("-> Temperature (C):          " + str(scanner.getTemp()))
-print("-> Humidity (%RH):           " + str(scanner.getHumid()))
+print("-> Temperature (C):          " + str(temperature))
+print("-> Humidity (%RH):           " + str(humidity))
 
 # Check barometer.
 print("\nChecking barometer...")
-print("-> Barometirc press. (kPa):  " + str(scanner.getBaro()))
+print("-> Barometirc press. (kPa):  " + str(baroPressure))
 
 # Check system temperature.
 print("\nChecking system temperature...")
-print("-> System temperature (C):   " + str(scanner.getSysTemp()))
+print("-> System temperature (C):   " + str(sysTemp))
 
 print("")
