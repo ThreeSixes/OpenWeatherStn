@@ -17,6 +17,7 @@ import datetime
 from hmc5883l import hmc5883l
 from am2315 import am2315
 from mpl115a2 import mpl115a2
+from mcp9808 import mcp9808
 from compoundSensor import compoundSensor
 
 # Pretty print
@@ -43,6 +44,7 @@ class owsScanner:
         self.cmpdSens = compoundSensor(windOffset)
         self.tempHumid = am2315()
         self.baroSens = mpl115a2()
+        self.sysThermo = mcp9808()
         
         # Track temp and humidity data from our am2315.
         self.__thData = []
@@ -225,10 +227,10 @@ class owsScanner:
         """
         getSysTemp()
         
-        Dummy method in place until support for system temperature readings is added. Returns None
+        Gets the system temperature in degrees C, up to four decimal places.
         """
         
-        return None
+        return self.sysThermo.getAmbientTemp()
 
 ##########################
 # Data layer for scanner #
