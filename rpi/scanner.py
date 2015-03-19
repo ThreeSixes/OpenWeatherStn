@@ -286,13 +286,13 @@ class worker(threading.Thread):
     Worker class - main execution thread
     """
     
-    def __init__(self, dataLayer, scanner):
+    def __init__(self):
         print("Init worker thread.")
         threading.Thread.__init__(self)
         
         # Pull in necessary objects.
-        self.dl = dataLayer
-        self.scanner = scanner
+        self.dl = dataLayer()
+        self.scanner = scanner()
         
     def displayRecord(self, allData, rawWind):
         """
@@ -507,18 +507,15 @@ class worker(threading.Thread):
 # Main execution body #
 #######################
 
-# Set up our scanner object and data layer.
-scanner = owsScanner()
-dl = scannerData()
-
 # Threading setup
 threadLock = threading.Lock()
 threadList = []
 
+# Run 'till we're killed for some reason.
 while(True):
     # Set up our thread.
     print("Spinning up poller thread.")
-    scanThread = worker(dl, scanner)
+    scanThread = worker()
     scanThread.start()
     threadList.append(scanThread)
     
