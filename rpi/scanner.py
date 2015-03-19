@@ -277,9 +277,9 @@ class scannerData:
         except Exception as e:
             raise e
 
-##########
-# Worker #
-##########
+################
+# Worker class #
+################
 
 class worker(threading.Thread):
     """
@@ -519,7 +519,6 @@ while(True):
     # Set up our thread.
     print("Spinning up poller thread.")
     scanThread = worker(dl, scanner)
-    scanThread = True
     scanThread.start()
     threadList.append(scanThread)
     
