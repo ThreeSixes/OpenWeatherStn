@@ -7,9 +7,6 @@
 # We need to do some trig.
 import math
 
-# Add SQLite3 support
-import sqlite3
-
 # Add support for date and time processing
 import datetime
 

@@ -1,3 +1,16 @@
+# OpenWeatherStn data layer by ThreeSixes (https://github.com/ThreeSixes/OpenWeatherStn)
+
+###########
+# Imports #
+###########
+
+# Add SQLite3 support
+import sqlite3
+
+#################
+# owsData class #
+#################
+
 class owsData:
     """
     owsData is a data layer class to manage data access for the OpenWeatherStn project:
