@@ -311,7 +311,7 @@ class worker(threading.Thread):
         print("\nChecking compound sensor...")
         
         print("-> Average wind speed (kph): " + str(allData[6]))
-        print("-> Maximum wind speed (kph): " + str(alldata[7]))
+        print("-> Maximum wind speed (kph): " + str(allData[7]))
         print("-> Average wind raw value:   " + str(rawWind[0]))
         print("-> Maximum wind raw value:   " + str(rawWind[1]))
         
