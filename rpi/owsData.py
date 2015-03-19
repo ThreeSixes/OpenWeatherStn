@@ -29,6 +29,19 @@ class owsData:
         except Exception as e:
             raise e
     
+    def __getPast(self, endingPoint):
+        """
+        __getPast(startingPoint, endingPoint)
+        
+        Get data from the past stating at a date time stamp and ending with another.
+        
+        *** NOT YET IMPLEMENTED ***
+        """
+        
+        retVal = None
+        
+        return retVal
+    
     def addRecord(self, values):
         """
         addRecord(values)
@@ -46,3 +59,24 @@ class owsData:
             
         except Exception as e:
             raise e
+    
+    def getLastRecord(self):
+        """
+        getLastRecord()
+        
+        Pull the latest record from the database in the following tuple order:
+        
+        ("dts", "temp", "humid", "baro", "rain", "windDir", "windAvg", "windMax", "lightLvl", "sysTemp")
+        
+        Any value except dts can be null.
+        """
+        
+        try:
+            # Pull the most recent data point.
+            self.__db.execute("SELECT * FROM weather WHERE dts = (SELECT MAX(dts) FROM weather);")
+            
+            return self.__db.fetchone()
+            
+        except Exception as e:
+            raise e
+    
