@@ -291,7 +291,7 @@ class worker(threading.Thread):
         threading.Thread.__init__(self)
         
         # Pull in necessary objects.
-        self.dl = dataLayer()
+        self.dl = scannerData()
         self.scanner = scanner()
         
     def displayRecord(self, allData, rawWind):
