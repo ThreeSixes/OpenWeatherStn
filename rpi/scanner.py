@@ -308,12 +308,12 @@ class worker(threading.Thread):
         """
         
         # System test.
-        print(" + Open Weather Station sensor scan test +")
+        print("\n + Open Weather Station sensor scan test +")
         
         print("\nExecution time:")
         print("-> " + str(allData[0]))
         
-        print("\nChecking compound sensor...")
+        print("\nCompound sensor...")
         
         print("-> Average wind speed (kph): " + str(allData[6]))
         print("-> Maximum wind speed (kph): " + str(allData[7]))
@@ -324,21 +324,21 @@ class worker(threading.Thread):
         print("-> Ambient light:            " + str(allData[8]))
         
         # Check the wind direciton.
-        print("\nChecking wind vein...")
+        print("\nWind vein...")
         print("-> Wind direction (deg):     " + str(allData[5]))
         
         # Check the temperature and humidity.
-        print("\nChecking temperature and humdity...")
+        print("\nTemperature and humdity...")
         
         print("-> Temperature (C):          " + str(allData[1]))
         print("-> Humidity (%RH):           " + str(allData[2]))
         
         # Check barometer.
-        print("\nChecking barometer...")
+        print("\nBarometer...")
         print("-> Barometirc press. (kPa):  " + str(allData[3]))
         
         # Check system temperature.
-        print("\nChecking system temperature...")
+        print("\nSystem thermometer...")
         print("-> System temperature (C):   " + str(allData[9]))
         
         print("")
