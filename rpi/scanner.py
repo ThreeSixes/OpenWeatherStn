@@ -292,7 +292,7 @@ class worker(threading.Thread):
         
         # Pull in necessary objects.
         self.dl = scannerData()
-        self.scanner = scanner()
+        self.scanner = owsScanner()
         
     def displayRecord(self, allData, rawWind):
         """
