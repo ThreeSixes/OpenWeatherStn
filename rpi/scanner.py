@@ -284,12 +284,17 @@ class scannerData:
 
 class worker(threading.Thread):
     """
-    Worker class - main execution thread
+    Worker class - main execution thread takes one optional argument:
+    debugOn: set to True for debugging output, set to False for no debugging output. Defaults to False.
     """
     
-    def __init__(self):
+    def __init__(self, debugOn = False):
         print("Init worker thread.")
         threading.Thread.__init__(self)
+        
+        # Debugging flags
+        self.debugOn = debugOn
+        if debugOn: print("Debugging enabled.")
         
         # Pull in necessary objects.
         self.dl = scannerData()
@@ -501,7 +506,9 @@ class worker(threading.Thread):
         
         # Insert the tuple into the database.
         self.dl.addRecord(allData)
-        self.displayRecord(allData, [windAvgRaw, windMaxRaw])
+        
+        # If we're debugging dump the data we just got.
+        if self.debugOn: self.displayRecord(allData, [windAvgRaw, windMaxRaw])
 
 
 #######################
@@ -516,7 +523,7 @@ threadList = []
 while(True):
     # Set up our thread.
     print("Spinning up poller thread.")
-    scanThread = worker()
+    scanThread = worker(True)
     scanThread.start()
     threadList.append(scanThread)
     
