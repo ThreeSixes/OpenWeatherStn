@@ -491,6 +491,8 @@ while(True):
     for t in threadList:
         t.join()
     
+    print("Poller thread closed.")
+    
     # Sleeping is important because it enables us to quit with control + C, and makes sure our thread runs every 60 seconds.
     time.sleep(60)
 
