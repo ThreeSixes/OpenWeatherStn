@@ -251,8 +251,9 @@ class scannerData:
     
     def __init__(self, dbFile = "db/weather.db"):
         try:
-            # Connect to our SQLite database and create an object we can use to interact with it.
-            self.__dbConn = sqlite3.connect(dbFile, detect_types=sqlite3.PARSE_DECLTYPES)
+            # Connect to our SQLite database and create an object we can use to interact with it,
+            # and make sure the Sqlite 3 doesn't do the thread check since we're only using one thread.
+            self.__dbConn = sqlite3.connect(dbFile, detect_types = sqlite3.PARSE_DECLTYPES, check_same_thread = False)
             self.__db = self.__dbConn.cursor()
         
         # Pass any exception we get straight through.
