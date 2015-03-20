@@ -17,7 +17,7 @@ from pprint import pprint
 dl = owsData()
 
 # Figoure out our mode.
-modeJson = False
+modeJson = True
 
 # Pull the last record as a tuple
 lastRecord = dl.getLastRecord()
