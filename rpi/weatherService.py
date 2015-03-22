@@ -31,7 +31,7 @@ class weatherService:
         Convert weather data to an HTML page. Returns a string.
         """
         # HTML header
-        body = "<HTML>\n<HEAD>\n<TITLE>OpenWeatherStn live data</TITLE>\n</HEAD>\n<BODY>\n"
+        body = "<HTML>\n<HEAD>\n<TITLE>OpenWeatherStn live data</TITLE>\n</HEAD>\n<BODY style=\"background-color: black;\">\n"
         # Build page with data.
         # HTML footer
         body = body + "</BODY>\n</HTML>"
