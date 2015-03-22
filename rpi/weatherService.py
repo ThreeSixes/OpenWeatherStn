@@ -31,8 +31,21 @@ class weatherService:
         Convert weather data to an HTML page. Returns a string.
         """
         # HTML header
-        body = "<HTML>\n<HEAD>\n<TITLE>OpenWeatherStn live data</TITLE>\n</HEAD>\n<BODY style=\"background-color: black;\">\n"
+        body = "<HTML>\n<HEAD>\n<TITLE>OpenWeatherStn live data</TITLE>\n</HEAD>\n<BODY style=\"font-family: sans-serif; background-color: black; color: white;\">\n"
+        
+        # Intro text
+        body = body + "<SPAN style=\"font-size: large; font-weight: bold;\">Open Weather Station live data</SPAN>\n<BR />\n<BR />\n"
+        
         # Build page with data.
+        body = body + "Reading taken: " + weatherDict['dts'] + " UTC<BR />\n<BR />\n"
+        
+        # Get all the weathers!
+        for key in weatherDict:
+            if key != 'dts':
+                body = body + weatherDict[key]['name'] + ": " + str(weatherDict[key]['value'])
+                if weatherDict[key]['unit'] != None: body = body + " " + weatherDict[key]['unit']
+                body = body + "<BR />\n"
+        
         # HTML footer
         body = body + "</BODY>\n</HTML>"
         
@@ -65,15 +78,15 @@ class weatherService:
             
         # Build dict for JSONification.
         lastRecord = {"dts": dts, \
-            "temp": {"value": lastRecord[1], "unit": "C"}, \
-            "humidity": {"value": lastRecord[2], "unit": "%RH"}, \
-            "baro": {"value": lastRecord[3], "unit": "kPa"}, \
-            "rainCt": {"value": lastRecord[4], "unit": "count"}, \
-            "windDir": {"value": lastRecord[5], "unit": "degrees"}, \
-            "windAvgSpd": {"value": lastRecord[6], "unit": "kph"}, \
-            "windMaxSpd": {"value": lastRecord[7], "unit": "kph"}, \
-            "lightAmb": {"value": lastRecord[8], "unit": "scalar"}, \
-            "sysTemp": {"value": lastRecord[9], "unit": "C"}}
+            "temp": {"name": "Temperature", "value": lastRecord[1], "unit": "C"}, \
+            "humid": {"name": "Humidity", "value": lastRecord[2], "unit": "%RH"}, \
+            "baro": {"name": "Barometric pressure", "value": lastRecord[3], "unit": "kPa"}, \
+            "rainCt": {"name": "Rain intensity", "value": lastRecord[4], "unit": "count"}, \
+            "windDir": {"name": "Wind direction", "value": lastRecord[5], "unit": "degrees"}, \
+            "windAvgSpd": {"name": "Average wind speed", "value": lastRecord[6], "unit": "kph"}, \
+            "windMaxSpd": {"name": "Maximum wind speed", "value": lastRecord[7], "unit": "kph"}, \
+            "lightAmb": {"name": "Ambient light", "value": lastRecord[8], "unit": None}, \
+            "sysTemp": {"name": "System temperature", "value": lastRecord[9], "unit": "C"}}
         
         # JSON or HTML mode?
         if checkEnv['REQUEST_METHOD'] == 'POST':
