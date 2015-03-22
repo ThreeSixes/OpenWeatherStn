@@ -81,7 +81,7 @@ class weatherService:
             "temp": {"name": "Temperature", "value": lastRecord[1], "unit": "C"}, \
             "humid": {"name": "Humidity", "value": lastRecord[2], "unit": "%RH"}, \
             "baro": {"name": "Barometric pressure", "value": lastRecord[3], "unit": "kPa"}, \
-            "rainCt": {"name": "Rain intensity", "value": lastRecord[4], "unit": "count"}, \
+            "rainCt": {"name": "Rain intensity", "value": lastRecord[4], "unit": "counts"}, \
             "windDir": {"name": "Wind direction", "value": lastRecord[5], "unit": "degrees"}, \
             "windAvgSpd": {"name": "Average wind speed", "value": lastRecord[6], "unit": "kph"}, \
             "windMaxSpd": {"name": "Maximum wind speed", "value": lastRecord[7], "unit": "kph"}, \
