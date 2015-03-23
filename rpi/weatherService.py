@@ -10,7 +10,6 @@ import struct
 from owsData import owsData
 from pprint import pprint
 from wsgiref.simple_server import make_server
-from wsgiref.validate import validator
 
 ########################
 # weatherService class #
@@ -191,10 +190,7 @@ class weatherService:
 # Utilize our worker class
 hardWorker = weatherService()
 
-# Validator
-validatorApp = validator(hardWorker.worker)
-
 # Set up HTTP server
-httpSrv = make_server('', 80, validatorApp)
+httpSrv = make_server('', 80, hardWorker.worker)
 print("weatherService HTTP server listening on port 80.")
 httpSrv.serve_forever()
