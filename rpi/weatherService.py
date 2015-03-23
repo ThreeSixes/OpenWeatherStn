@@ -7,6 +7,7 @@
 import json
 import datetime
 import struct
+import math
 from owsData import owsData
 from pprint import pprint
 from wsgiref.simple_server import make_server
@@ -23,6 +24,18 @@ class weatherService:
     def __init__(self):
         self.dl = owsData() # Data layer
         self.modeJson = False # Default to JSON mode.        
+    
+    def __getDewpoint(self, temp, rh):
+        """
+        __getDewpoint(temp, rh)
+        
+        Estimates the dew point given a temperature in degrees celsius and relative humidity as a percentage. Returns an integer representing dew point in degrees celsius rounded to one decimal point.
+        """
+        
+        retVal = 243.04 * (math.log(rh / 100) + ((17.625 * temp) / (243.04 + temp))) / \
+            (17.625 - math.log(rh / 100) - ((17.625 * temp) / (243.04 + temp))) 
+        
+        return round(retVal, 1)
     
     def __htmlify(self, weatherDict):
         """
@@ -44,17 +57,16 @@ class weatherService:
         body = body + "<TABLE style=\"border: 1px solid black;\">\n"
         
         # Get all the weathers!
-        for key in ["temp", "humid", "baro", "windAvgSpd", "windMaxSpd", "windDir", "rainCt", "lightAmb", "sysTemp"]:
+        for key in ["temp", "humid", "baro", "windAvgSpd", "windMaxSpd", "windDirCrd", "windDir", "rainCt", "dewpoint", "lightAmb", "sysTemp"]:
             if key != 'dts':
                 body = body + "<TR><TD style=\"font-weight: bold;\">" + weatherDict[key]['name'] + "</TD><TD>" + str(weatherDict[key]['value'])
                 
                 # Inject (or not) additional data.
                 if weatherDict[key]['unit'] != None: body = body + " " + weatherDict[key]['unit']
-                if key == 'windDir': body = body + " (" + self.__getCardinalDir(weatherDict[key]['value']) + ")"
             
             # End cell
             body = body + "</TD></TR>\n"
-        
+            
         # HTML footer
         body = body + "</TABLE>\n</BODY>\n</HTML>"
         
@@ -156,6 +168,9 @@ class weatherService:
         # Set default status to 200 OK.
         status = "200 OK"
         
+        # Dump JSON MIME type:
+        cntntType = "application/javascript"
+        
         # JSON or HTML mode?
         if checkEnv['REQUEST_METHOD'] == 'POST':
             # See if we have a client sending us JSON.
@@ -190,11 +205,13 @@ class weatherService:
             # Build JSON string from dict.
             body = json.dumps(lastRecord)
             
-            # Dump JSON MIME type:
-            cntntType = "application/javascript"
         else:
             # Default HTML MIME type.
             cntntType = "text/html"
+            
+            # Add some computed fields to be displayed
+            lastRecord.update({"dewpoint": {"name": "Dew point", "value": self.__getDewpoint(lastRecord['temp']['value'], lastRecord['humid']['value']), "unit": "C"}})
+            lastRecord.update({"windDirCrd": {"name": "Wind cardinal dir.", "value": self.__getCardinalDir(lastRecord['windDir']['value']), "unit": None}})
             
             # See if we asked for different units.
             if '/standard' in checkEnv['PATH_INFO'].lower():
