@@ -6,11 +6,11 @@
 
 import json
 import datetime
+import struct
 from owsData import owsData
 from pprint import pprint
 from wsgiref.simple_server import make_server
 from wsgiref.validate import validator
-from cgi import parse_qs, escape
 
 ########################
 # weatherService class #
@@ -163,12 +163,13 @@ class weatherService:
             # Dump JSON MIME type:
             cntntType = "application/javascript"
         else:
+            # Default HTML MIME type.
+            cntntType = "text/html"
+            
             # See if we asked for different units.
             if '/standard' in checkEnv['PATH_INFO'].lower():
                 lastRecord = self.__toStandard(lastRecord)
-            
-            # Dump HTML MIME type
-            cntntType = "text/html"
+                print(str(checkEnv['PATH_INFO']))
             
             # Gather HTML
             body = self.__htmlify(lastRecord)
