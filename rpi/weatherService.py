@@ -10,6 +10,7 @@ from owsData import owsData
 from pprint import pprint
 from wsgiref.simple_server import make_server
 from wsgiref.validate import validator
+from cgi import parse_qs, escape
 
 ########################
 # weatherService class #
@@ -31,13 +32,14 @@ class weatherService:
         Convert weather data to an HTML page. Returns a string.
         """
         # HTML header
-        body = "<HTML>\n<HEAD>\n<TITLE>OpenWeatherStn live data</TITLE>\n</HEAD>\n<BODY style=\"font-family: sans-serif; background-color: black; color: white;\">\n"
+        body = "<HTML>\n<HEAD>\n<META http-equiv=\"refresh\" content=\"60\" />\n<TITLE>OpenWeatherStn live data</TITLE>\n</HEAD>\n"
+        body = body + "<BODY style=\"font-family: sans-serif; background-color: black; color: white;\">\n"
         
         # Intro text
         body = body + "<SPAN style=\"font-size: large; font-weight: bold;\">Open Weather Station live data</SPAN>\n<BR />\n<BR />\n"
         
         # Build page with data.
-        body = body + "Reading taken: " + weatherDict['dts'] + " UTC<BR />\n<BR />\n"
+        body = body + "Reading taken: " + weatherDict['dts'] + " UTC\n<BR />\n<BR />\n"
         
         # Start creating an output table.
         body = body + "<TABLE style=\"border: 1px solid black;\">\n"
@@ -48,6 +50,7 @@ class weatherService:
                 body = body + "<TR><TD style=\"font-weight: bold;\">" + weatherDict[key]['name'] + "</TD><TD>" + str(weatherDict[key]['value'])
                 if weatherDict[key]['unit'] != None: body = body + " " + weatherDict[key]['unit']
             
+            # End cell
             body = body + "</TD></TR>\n"
         
         # HTML footer
@@ -75,7 +78,7 @@ class weatherService:
                 # Convert pressure in kilopascals to inches of mercury.
                 if data[point]['unit'] == "kPa":
                     data[point]['unit'] = "inHg"
-                    data[point]['value'] = round(data[point]['value'] * 0.295333727, 1)
+                    data[point]['value'] = round(data[point]['value'] * 0.295333727, 2)
                 
                 # Convert velocity from kph to mph.
                 if data[point]['unit'] == "kph":
@@ -120,19 +123,48 @@ class weatherService:
             "lightAmb": {"name": "Ambient light", "value": lastRecord[8], "unit": None}, \
             "sysTemp": {"name": "System temperature", "value": lastRecord[9], "unit": "C"}}
         
+        # Set default status to 200 OK.
+        status = "200 OK"
+        
         # JSON or HTML mode?
         if checkEnv['REQUEST_METHOD'] == 'POST':
+            # See if we have a client sending us JSON.
+            if checkEnv['CONTENT_TYPE'] == "application/json":
+                
+                # Try to get the post body size.
+                try:
+                    # Get the size in bytes our post should be.
+                    postSz = int(checkEnv.get('CONTENT_LENGTH', 0))
+                
+                except (ValueError):
+                    # If we fail set it to zero.
+                    postSz = 0
+                
+                # Get the post body.
+                postBody = checkEnv['wsgi.input'].read(postSz)
+                postBody = postBody.decode("utf-8")
+                
+                # Try to convert the JSON string to a dict.
+                try:
+                    postData = json.loads(postBody)
+                except ValueError as e:
+                    pprint(e)
+                
+                # Did we get a request to change units?
+                if 'units' in postData:
+                    # Did they ask for standard?
+                    if postData['units'].lower() == "standard":
+                        # If so, convert.
+                        lastRecord = self.__toStandard(lastRecord)
+            
             # Build JSON string from dict.
-            jsonRecord = json.dumps(lastRecord)
+            body = json.dumps(lastRecord)
             
             # Dump JSON MIME type:
             cntntType = "application/javascript"
-            
-            # Set body.
-            body = jsonRecord
         else:
             # See if we asked for different units.
-            if '/standard' in checkEnv['PATH_INFO']:
+            if '/standard' in checkEnv['PATH_INFO'].lower():
                 lastRecord = self.__toStandard(lastRecord)
             
             # Dump HTML MIME type
@@ -140,9 +172,6 @@ class weatherService:
             
             # Gather HTML
             body = self.__htmlify(lastRecord)
-        
-        # Set a generic HTTP 200 status
-        status = "200 OK"
         
         # Set content type header
         headers = [('Content-Type', cntntType)]
