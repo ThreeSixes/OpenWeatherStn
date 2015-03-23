@@ -26,7 +26,7 @@ class weatherService:
     
     def __htmlify(self, weatherDict):
         """
-        htmlify(weatherDict)
+        __htmlify(weatherDict)
         
         Convert weather data to an HTML page. Returns a string.
         """
@@ -47,7 +47,10 @@ class weatherService:
         for key in ["temp", "humid", "baro", "windAvgSpd", "windMaxSpd", "windDir", "rainCt", "lightAmb", "sysTemp"]:
             if key != 'dts':
                 body = body + "<TR><TD style=\"font-weight: bold;\">" + weatherDict[key]['name'] + "</TD><TD>" + str(weatherDict[key]['value'])
+                
+                # Inject (or not) additional data.
                 if weatherDict[key]['unit'] != None: body = body + " " + weatherDict[key]['unit']
+                if key == 'windDir': body = body + " (" + self.__getCardinalDir(weatherDict[key]['value']) + ")"
             
             # End cell
             body = body + "</TD></TR>\n"
@@ -85,6 +88,34 @@ class weatherService:
                     data[point]['value'] = round(data[point]['value'] * 0.621371, 2)
         
         return data
+    
+    def __getCardinalDir(self, heading):
+        """
+        __getCardinalDir(heading)
+        
+        Get the cardinal direction of a heading. Returns a string with directional information (N, NE, S, SW, etc.)
+        """
+        
+        retVal = None
+        
+        if (heading >= 351) or (heading <= 10):
+            retVal = "N"
+        elif (heading >= 11) and (heading <= 80):
+            retVal = "NE"
+        elif (heading >= 81) and (heading <= 100):
+            retVal = "E"
+        elif (heading >= 101) and (heading <= 170):
+            retVal = "SE"
+        elif (heading >= 171) and (heading <= 190):
+            retVal = "S"
+        elif (heading >= 191) and (heading <= 260):
+            retVal = "SW"
+        elif (heading >= 261) and (heading <= 280):
+            retVal = "W"
+        elif (heading >= 281) and (heading <= 250):
+            retVal = "NW"
+        
+        return retVal
     
     def worker(self, env, startResponse):
         """
