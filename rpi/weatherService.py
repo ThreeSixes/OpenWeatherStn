@@ -70,7 +70,7 @@ class weatherService:
                 # Convert a celcius temp to farenheit
                 if data[point]['unit'] == "C":
                     data[point]['unit'] = "F"
-                    data[point]['value'] = round((data[point]['value'] * 9.0) / 5.0 + 32.0, 1)
+                    data[point]['value'] = round((data[point]['value'] * 9.0) / 5.0 + 32.0, 3)
                 
                 # Convert pressure in kilopascals to inches of mercury.
                 if data[point]['unit'] == "kPa":
