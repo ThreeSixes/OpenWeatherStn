@@ -195,6 +195,14 @@ class weatherService:
                 except ValueError as e:
                     pprint(e)
                 
+                # Do we want extra data?
+                if 'extra' in postData:
+                    # Are we asking for computed values?
+                    if postData['extra'] == "computed":
+                        # Add some computed values
+                        lastRecord.update({"dewpoint": {"name": "Dew point", "value": self.__getDewpoint(lastRecord['temp']['value'], lastRecord['humid']['value']), "unit": "C"}})
+                        lastRecord.update({"windDirCrd": {"name": "Wind cardinal dir.", "value": self.__getCardinalDir(lastRecord['windDir']['value']), "unit": None}})
+                
                 # Did we get a request to change units?
                 if 'units' in postData:
                     # Did they ask for standard?
