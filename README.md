@@ -14,8 +14,10 @@ Features:
 
 Sensors / sensing components:
 - Anemometer (http://adafru.it/1733)
-- AM2315 Encased I2C Temperature/Humidity Sensor (http://adafru.it/1293)
+- AOSONG AM2315 Encased I2C Temperature/Humidity Sensor (http://adafru.it/1293)
 - Parallax HMC5883L break out board (http://www.parallax.com/product/29133)
+- Freescale MPL115A2 barometer (https://www.adafruit.com/products/992)
+- Microchip MCP9808 High-accuracy thermometer (https://www.adafruit.com/products/1782)
 - 2x Cadmimum Sulfide photocells (purchased from RadioShack)
 - Red laser module (http://www.amazon.com/50mW-650nm-Focusable-Laser-Module/dp/B00S9JW26O/ref=sr_1_11?s=industrial&ie=UTF8&qid=1425583140&sr=1-11) 
 - Funnel
