@@ -124,7 +124,7 @@ class weatherService:
             retVal = "SW"
         elif (heading >= 261) and (heading <= 280):
             retVal = "W"
-        elif (heading >= 281) and (heading <= 250):
+        elif (heading >= 281) and (heading <= 350):
             retVal = "NW"
         
         return retVal
