@@ -172,7 +172,10 @@ class weatherService:
         cntntType = "application/javascript"
         
         # JSON or HTML mode?
-        if checkEnv['REQUEST_METHOD'] == 'POST':              
+        if checkEnv['REQUEST_METHOD'] == 'POST':
+            # We'll use this to keep track of our post data.
+            postData = {}
+            
             # Try to get the post body size.
             try:
                 # Get the size in bytes our post should be.
