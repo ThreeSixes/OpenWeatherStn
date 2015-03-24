@@ -172,47 +172,43 @@ class weatherService:
         cntntType = "application/javascript"
         
         # JSON or HTML mode?
-        if checkEnv['REQUEST_METHOD'] == 'POST':
-            # See if we have a client sending us JSON.
-            if checkEnv['CONTENT_TYPE'] == "application/json":
+        if checkEnv['REQUEST_METHOD'] == 'POST':              
+            # Try to get the post body size.
+            try:
+                # Get the size in bytes our post should be.
+                postSz = int(checkEnv.get('CONTENT_LENGTH', 0))
                 
-                # Try to get the post body size.
-                try:
-                    # Get the size in bytes our post should be.
-                    postSz = int(checkEnv.get('CONTENT_LENGTH', 0))
+            except (ValueError):
+                # If we fail set it to zero.
+                postSz = 0
+            
+            # Get the post body.
+            postBody = checkEnv['wsgi.input'].read(postSz)
+            postBody = postBody.decode("utf-8")
                 
-                except (ValueError):
-                    # If we fail set it to zero.
-                    postSz = 0
-                
-                # Get the post body.
-                postBody = checkEnv['wsgi.input'].read(postSz)
-                postBody = postBody.decode("utf-8")
-                
-                # Try to convert the JSON string to a dict.
-                try:
-                    postData = json.loads(postBody)
-                except ValueError as e:
-                    pprint(e)
-                
-                # Do we want extra data?
-                if 'extra' in postData:
-                    # Are we asking for computed values?
-                    if postData['extra'] == "computed":
-                        # Add some computed values
-                        lastRecord.update({"dewpoint": {"name": "Dew point", "value": self.__getDewpoint(lastRecord['temp']['value'], lastRecord['humid']['value']), "unit": "C"}})
-                        lastRecord.update({"windDirCrd": {"name": "Wind cardinal dir.", "value": self.__getCardinalDir(lastRecord['windDir']['value']), "unit": None}})
-                
-                # Did we get a request to change units?
-                if 'units' in postData:
-                    # Did they ask for standard?
-                    if postData['units'].lower() == "standard":
-                        # If so, convert.
-                        lastRecord = self.__toStandard(lastRecord)
+            # Try to convert the JSON string to a dict.
+            try:
+                postData = json.loads(postBody)
+            except ValueError as e:
+                pprint(e)
+            
+            # Do we want extra data?
+            if 'extra' in postData:
+                # Are we asking for computed values?
+                if postData['extra'] == "computed":
+                    # Add some computed values
+                    lastRecord.update({"dewpoint": {"name": "Dew point", "value": self.__getDewpoint(lastRecord['temp']['value'], lastRecord['humid']['value']), "unit": "C"}})
+                    lastRecord.update({"windDirCrd": {"name": "Wind cardinal dir.", "value": self.__getCardinalDir(lastRecord['windDir']['value']), "unit": None}})
+            
+            # Did we get a request to change units?
+            if 'units' in postData:
+                # Did they ask for standard?
+                if postData['units'].lower() == "standard":
+                    # If so, convert.
+                    lastRecord = self.__toStandard(lastRecord)
             
             # Build JSON string from dict.
             body = json.dumps(lastRecord)
-            
         else:
             # Default HTML MIME type.
             cntntType = "text/html"
