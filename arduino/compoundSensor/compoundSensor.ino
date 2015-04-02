@@ -78,7 +78,7 @@ Byte 11: Ambient light brightness
 
 // Version numbers
 #define versionMajor       0x00
-#define versionMinor       0x03
+#define versionMinor       0x04
 
 // How long should we sample?
 #define sampleTime          60  // 1 minute (60 seconds)
@@ -89,6 +89,9 @@ Byte 11: Ambient light brightness
 // Drop threshold config. When we're this far below the baseline we trigger
 // the rain counter.
 #define dropThresh         -6
+
+// How many samples do we want per subsample?
+#define subSampleSize      1000
 
 
 // ***************************
@@ -110,6 +113,10 @@ int sampleTimer = 0;
 // I2C buffer and command status
 uint8_t i2cBuff[i2cBuffSize]; // Store I2C registers here.
 uint8_t i2cTarget = -1; // Store the command we're being sent.
+
+// Subsampling setup
+unsigned int subSampleCounter = 0; // Keep track of how many samples within a subsample we have taken.
+unsigned int subSampleCount = 0; // How many subsamples have we taken?
 
 // *************
 // * Functions *
@@ -233,17 +240,17 @@ void setup() {
   // Set the I2C status register to include all installed instruments, and print message.
   #ifdef hasRain
     setI2CStat(i2cStatus_rain);
-    Serial.println("Rain sensor instaled");
+    Serial.println("Rain sensor installed");
   #endif
   
   #ifdef hasWind
     setI2CStat(i2cStatus_wind);
-    Serial.println("Wind sensor instaled");
+    Serial.println("Wind sensor installed");
   #endif
   
   #ifdef hasLight
     setI2CStat(i2cStatus_light);
-    Serial.println("Light sensor instaled");
+    Serial.println("Light sensor installed");
   #endif
   
   // Set up our I2C bus
@@ -269,7 +276,7 @@ void loop() {
   int windVal = 0;
   
   // Use this to keep a running average of wind value
-  int windAvg = 0;
+  unsigned long windAvg = 0;
   
   // Use this to keep track of the fastest wind speed we read.
   int windMax = 0;
@@ -278,7 +285,7 @@ void loop() {
   int lightVal = 0;
   
   // Use this to keep a running average of the ambient light value we read.
-  int lightAvg = 0;
+  unsigned long lightAvg = 0;
 
   // Use this to keep track of the offset between our
   // calibrated laser brightness and the last reading from the CdS cell.
@@ -287,9 +294,12 @@ void loop() {
   // Keep track of hits per minute (roughly)
   int hits = 0;
 
+  // Accumulate values between subsamples.
+  unsigned long windAvgSubSample = 0;
+  unsigned long lightAvgSubSample = 0;
+
   // Dump I2C registers.
   dumpI2cReg();
-
   
   #ifdef hasRain
     // Print main loop debug message
@@ -328,19 +338,49 @@ void loop() {
     // Sample for specified amount of time.
     while(sampleTimer < sampleTime) {
       
+      // See if we've reached our subSampleSize limit.
+      if(subSampleCounter == subSampleSize) {        
+        // Average wind values into subsample
+        windAvg += round(windAvgSubSample / subSampleSize);
+        
+        // Average light values into subsample
+        lightAvg += round(lightAvgSubSample / subSampleSize);
+        
+        // Reset subsample counter
+        subSampleCounter = 0;
+        
+        // Reset subsample averaging values
+        windAvgSubSample = 0;
+        lightAvgSubSample = 0;
+
+        // Increment subsample count.
+        subSampleCount++;
+      }
+      
+      // Increment subsample counter.
+      subSampleCounter++;
+      
       #ifdef hasRain
         // Check the rainCdS sensor for rain data
         rainVal = analogRead(rainCdS);
       #endif
       
       #ifdef hasWind
-        // Check the anemometer for wind speed
+        // Check the anemometer for wind speed.
         windVal = analogRead(anemometer);
+        
+        // Stack wind speed value on the subsample.
+        windAvgSubSample += windVal;
+        
+        // Do we have a record wind speed for this sample set?
+        if (windVal > windMax) {
+          windMax = windVal;
+        }
       #endif
 
       #ifdef hasLight
-        // Check the ambient light sensor.
-        lightVal = analogRead(lightCdS);
+        // Stack light value on the subsample.
+        lightAvgSubSample += analogRead(lightCdS);
       #endif
 
       #ifdef hasRain
@@ -357,37 +397,6 @@ void loop() {
         }
       #endif
       
-      // Try to average our wind and ambient light data out.
-      if (firstSample) {
-        // Since we didn't have a previous sample, don't add or divide.
-        #ifdef hasWind
-          windAvg = windVal;
-        #endif
-        
-        #ifdef hasLight
-          lightAvg = lightVal;
-        #endif
-        
-        // Clear flag.
-        firstSample = LOW;
-      } else {
-        // Compute running average of wind/light data.
-        #ifdef hasWind
-          windAvg = (windAvg + windVal) / 2;
-        #endif
-        
-        #ifdef hasLight
-          lightAvg = (lightAvg + lightVal) / 2;
-        #endif
-      }
-      
-      #ifdef hasWind
-        // Do we have a record wind speed for this sample set?
-        if (windVal > windMax) {
-          windMax = windVal;
-        }
-      #endif
-      
       // Wait 1ms before next sample.
       delay(1);
     }
@@ -397,12 +406,39 @@ void loop() {
       rainSample = hits;
     #endif
     
+    // Debug print before modifying sample counts
+    Serial.print("Samples:   ");
+    Serial.println((subSampleCount * subSampleSize) + subSampleCounter);
+    
+    // If we have extra subsamples increment the sample count
+    if(subSampleCounter > 0) {
+      // Bump the subSampleCount
+      subSampleCount++;
+      
+      #ifdef hasWind
+       // Add the straggler wind sample average to the master wind average
+       windAvg += (windAvgSubSample / subSampleCounter);
+      #endif
+      
+      #ifdef hasLight
+        // Add the straggler light sample average to the master light average
+        lightAvg += (lightAvgSubSample / subSampleCounter);
+      #endif
+    }
+    
     #ifdef hasWind
-      windSample = windAvg;
+      // Average the wind samples.
+      windSample = round(windAvg / subSampleCount);
+      
+      // Set the wind max.
       windSampleMax = windMax;
     #endif
     
     #ifdef hasLight
+      // Average the light samples.
+      lightAvg = round(lightAvg / subSampleCount);
+      
+      // Map to an 8-bit number.
       lightSample = map(lightAvg, 0, 1023, 0, 255); // Convert to 8 bits.
     #endif
     
@@ -447,6 +483,8 @@ void loop() {
     windAvg = 0;
     windMax = 0;
     lightAvg = 0;
+    subSampleCount = 0;
+    subSampleCounter = 0;
   }
 }
 
